@@ -189,6 +189,17 @@ static bool scan_builtin(TSLexer *l, const bool *valid) {
   }
 
   if (!best) return false;
+
+  // CRITICAL: the external scanner runs BEFORE the internal lexer, so without
+  // this check `Current date:C33` gets its name half claimed here as an
+  // untokenized command_name, stranding `:C33` and cascading errors upward.
+  // A ':C' or ':K' following the match means this is tokenized source and the
+  // grammar's regex owns the whole thing — stand down.
+  if (l->lookahead == ':') {
+    adv(l);
+    if (l->lookahead == 'C' || l->lookahead == 'K') return false;
+  }
+
   // Namespaces are disjoint by design — the generator hard-errors on overlap —
   // so at most one bit is ever set. The ordering here is a safety net only.
   l->result_symbol = (best & FOURD_COMMAND)  ? COMMAND_NAME

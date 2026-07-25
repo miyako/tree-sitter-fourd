@@ -45,25 +45,25 @@ module.exports = grammar({
     $.system_variable,   // reserved: OK, Error, Document
   ],
 
-  conflicts: $ => [
-    // `Try` is both a single-line expression keyword and a block structure;
-    // a following '(' is ambiguous until the newline. Let GLR settle it.
-    [$.try_expression, $.try_statement],
-  ],
+  // No declared conflicts. The `Try` ambiguity resolves itself: try_statement
+  // requires a _terminator immediately after `Try`, try_expression requires
+  // '('. One token of lookahead separates them, so this is plain LR(1).
 
   word: $ => $.identifier,
 
   rules: {
+    // Ordering here is load-bearing, not cosmetic. Function bodies are
+    // repeat($._statement) with no closing token, so if bare statements were
+    // also legal AFTER a function, every trailing statement would be ambiguous
+    // between "last statement of the body" and "next top-level statement".
+    // Forbidding statements after the first function removes the ambiguity and
+    // matches the language: a method file has statements and no functions, a
+    // class file has functions and no free statements.
     source_file: $ => seq(
       optional($.attributes_header),   // // %attributes = { ... }
-      repeat($._top_level),
-    ),
-
-    _top_level: $ => choice(
-      $.extends_clause,
-      $.property_declaration,
-      $.function_declaration,
-      $._statement,
+      repeat(choice($.extends_clause, $.property_declaration)),
+      repeat($._statement),
+      repeat($.function_declaration),
     ),
 
     // ---------------------------------------------------------------- classes
