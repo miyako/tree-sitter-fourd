@@ -22,7 +22,7 @@ project were wrong because an assumption went unmarked.
 4. [Implementation walkthrough](#4-implementation-walkthrough)
 5. [Limitations](#5-limitations)
 6. [Building and testing](#6-building-and-testing)
-7. [Open questions](#7-open-questions)
+7. [Resolved questions](#7-resolved-questions)
 
 ---
 
@@ -111,6 +111,11 @@ application using a different one.
 The unsigilled process variable is a recurring hazard: a variable may be named
 `local`, `server`, or `defer`, colliding with keywords.
 
+**Reserved system variables [reported].** 4D predefines a set of unsigilled,
+unshadowable process variables — `OK`, `Error`, `Document` and others. They are
+a third builtin namespace alongside commands and constants, and some are
+multi-word, so they are table-driven rather than a keyword list.
+
 ### 2.5 Literals **[verified / reported]**
 
 | Form | Type | Notes |
@@ -136,7 +141,9 @@ Note that `#` is not a comment.
 
 **Logical.** `&` and, `|` or.
 
-**Arithmetic.** `+`, `-`, `*`, `/`, `%`, `\`.
+**Arithmetic.** `+`, `-`, `*`, `/`, `%`, and `\` for **integer division**
+**[reported]**. The backslash doubles as the line-continuation marker (§2.7),
+which is the single most consequential operator overload in the language.
 
 **Ternary.** 4D has exactly one ternary operator, the conditional `a ? b : c`.
 
@@ -156,8 +163,9 @@ postfix (dereference, `$p->`).
 
 - **Newline terminates a statement.**
 - **`;` separates arguments**, not statements — `ALERT("a";"b")`.
-- Line continuation with a trailing `\` is **[unverified]**; the scanner supports
-  it behind a comment, but confirm before relying on it.
+- **Line continuation with a trailing `\` exists in 21 R4 [reported].** Because
+  `\` is simultaneously integer division, the two are told apart by what
+  follows: a continuation has nothing but whitespace to end of line.
 
 ### 2.8 Control flow **[verified]**
 
@@ -190,7 +198,8 @@ can carry an object payload including a `deferred` flag.
 which evaluates a single-line expression.
 
 `defer` is a **21 R4** feature and is **call-shaped, not a block**:
-`defer(DOM CLOSE XML($root))`.
+`defer(DOM CLOSE XML($root))`. It accepts **any expression [reported]**, not
+merely a command or method call.
 
 Also present: `return`, `break`, `continue`.
 
@@ -248,6 +257,9 @@ End SQL
 The block body is SQL, with 4D interpolations (`:$var`, `<<$var>>`,
 `[Table]Field`) embedded in it. `SQL EXECUTE("...")` passes SQL as a string
 instead.
+
+**`End SQL` must be alone on its line [reported]** — not even a trailing comment
+is permitted. This turns out to be a gift rather than a restriction: see §4.8.
 
 ---
 
@@ -330,14 +342,22 @@ Current date + 1
              ^           " + 1"         → not a word, stop
 ```
 
-**Commands and constants share one table.** In untokenized form they are
-lexically identical — same character class, same embedded spaces, same
-expression positions. Two tables would mean two binary searches per word
-boundary and would leave the both-namespaces case undefined. One table with a
-kind mask makes any overlap a build-time warning resolved once, deliberately.
+**All three builtin namespaces share one table.** In untokenized form commands,
+constants and system variables are lexically identical — same character class,
+same embedded spaces, same expression positions. Separate tables would mean
+three binary searches per word boundary; one table with a kind mask costs one.
+
+**The namespaces are disjoint [reported]:** no 4D name is both a command and a
+constant. The generator hard-errors if a regenerated table ever violates that,
+rather than silently picking a winner, because the scanner assumes exactly one
+kind bit is set.
 
 The kind is masked against `valid_symbols` before acceptance, so a constant-only
 name will not match where the parser cannot accept a constant.
+
+Maximum word counts are confirmed for 21 R4: **6 for commands, 7 for
+constants**. `FOURD_MAX_BUILTIN_WORDS` is 7, and the generator warns if a
+regenerated table exceeds it.
 
 An `is_builtin_prefix()` check provides early bailout: once nothing in the table
 extends the accumulated prefix, further words cannot help, and ordinary
@@ -433,8 +453,14 @@ free.
 
 ### 4.8 SQL as a language injection
 
-`sql_content` is scanned raw up to a line whose sole content is `End SQL`, then
-handed to tree-sitter-sql:
+`sql_content` is scanned raw up to the terminator line, then handed to
+tree-sitter-sql.
+
+Because 4D requires `End SQL` to be alone on its line, the scanner enforces that
+strictly — after matching the two words it verifies nothing but whitespace
+remains. Strictness here buys robustness rather than costing it: SQL content
+containing the literal text `End SQL` inside a string or a mid-line comment
+cannot false-terminate the block.
 
 ```scm
 (sql_block
@@ -511,10 +537,12 @@ enabled, formulas stored in form JSON, or legacy `.4db` exports may contain
 French. Supporting these means a second keyword table and a second builtin
 table — a substantial addition, not a small one.
 
-### 5.8 Line continuation is unverified
+### 5.8 Line continuation defeats naïve line-based tooling
 
-The scanner supports a trailing `\` as a continuation. This was never confirmed
-for 4D. If `\` is used only as an operator in your version, remove that branch.
+A trailing `\` joins lines, so anything downstream that assumes one statement
+per physical line — grep-based linters, diff hunks, `#line`-style mapping — will
+misread continued statements. The parser handles it correctly; consumers of the
+tree may not.
 
 ### 5.9 Error recovery is untuned
 
@@ -552,19 +580,23 @@ to highlight — an unpleasant thing to debug from symptoms.
 
 ---
 
-## 7. Open questions
+## 7. Resolved questions
 
-- Does 21 R4 support `\` line continuation? (§5.8)
-- Is any name both a command and a constant? The generator warns; the answer
-  determines whether §4.2's kind mask ever does real work.
-- What is the true maximum builtin word count? The scanner bound is currently a
-  guess of 8; the generator computes the real figure.
-- Do `Begin SQL` blocks permit trailing content on the `End SQL` line?
-- Does `defer` accept arbitrary expressions, or only command and method calls?
-  The 4D forum has an open question on whether `defer(This.cleanup($root))`
-  is valid.
+Every question raised during design has since been answered by a 4D developer
+**[reported]**. Recorded here because each one changed the implementation.
 
----
+| Question | Answer | Consequence |
+|---|---|---|
+| Does 21 R4 support `\` line continuation? | Yes — and `\` is also integer division | Scanner distinguishes by end-of-line context (§4.7) |
+| Is any name both a command and a constant? | No; namespaces are disjoint | Generator hard-errors on overlap; scanner assumes one kind bit |
+| Are there other builtin namespaces? | Yes — reserved system variables (`OK`, `Error`, `Document`) | Third kind bit and external token added |
+| What is the maximum builtin word count? | 6 for commands, 7 for constants | `FOURD_MAX_BUILTIN_WORDS` = 7 |
+| May anything follow `End SQL` on its line? | No, not even a comment | Strict terminator check; prevents false termination |
+| Does `defer` accept arbitrary expressions? | Yes | `jump_statement` keeps the full `$._expression` |
+
+No open questions remain. New ones should be added here rather than resolved
+silently — the tagging convention in this document exists because untracked
+assumptions caused every early design error in the project.
 
 ## Provenance
 
