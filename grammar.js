@@ -188,8 +188,16 @@ module.exports = grammar({
       $._terminator,
     ),
 
+    // The parenthesis after `If` is NOT statement syntax — it is the start of
+    // an ordinary parenthesized expression. 4D happily accepts
+    //   If ($a=1) | ($b=2) | Match regex:C1019("\\d"; $c)
+    // where the condition is the whole `|` chain. Hard-coding '(' ... ')'
+    // here truncated the condition at the first ')' and errored on the '|'.
+    // Same reasoning applies to While / Until / case branches below. For and
+    // For each keep their parens: there the parens genuinely delimit a
+    // ';'-separated header.
     if_statement: $ => seq(
-      'If', '(', field('condition', $._expression), ')', $._terminator,
+      'If', field('condition', $._expression), $._terminator,
       field('consequence', repeat($._statement)),
       optional(seq('Else', $._terminator, field('alternative', repeat($._statement)))),
       kw('End', 'if'), $._terminator,
@@ -206,12 +214,12 @@ module.exports = grammar({
     ),
 
     case_branch: $ => seq(
-      ':', '(', field('condition', $._expression), ')', $._terminator,
+      ':', field('condition', $._expression), $._terminator,
       field('body', repeat($._statement)),
     ),
 
     while_statement: $ => seq(
-      'While', '(', field('condition', $._expression), ')', $._terminator,
+      'While', field('condition', $._expression), $._terminator,
       repeat($._statement),
       kw('End', 'while'), $._terminator,
     ),
@@ -219,7 +227,7 @@ module.exports = grammar({
     repeat_statement: $ => seq(
       'Repeat', $._terminator,
       repeat($._statement),
-      'Until', '(', field('condition', $._expression), ')', $._terminator,
+      'Until', field('condition', $._expression), $._terminator,
     ),
 
     for_statement: $ => seq(
@@ -317,7 +325,13 @@ module.exports = grammar({
       seq($._expression, $.char_ref_open, $._expression, $.char_ref_close),
     )),
 
-    _argument_list: $ => seq($._expression, repeat(seq(';', $._expression))),
+    _argument_list: $ => seq($._argument, repeat(seq(';', $._argument))),
+
+    // Commands accept marker parameters that are not expressions: the
+    // trailing '*' (e.g. `Lowercase($c; *)`) and the '>' / '<' sort/locking
+    // markers (`ORDER BY([T]; [T]F; >)`). '>' and '<' cannot begin an
+    // expression, so this stays LR(1)-clean.
+    _argument: $ => choice($._expression, '*', '>', '<'),
 
     _primary: $ => choice(
       // Tokenized forms — regex, no scanner involvement.
