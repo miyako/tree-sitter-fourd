@@ -85,9 +85,13 @@ module.exports = grammar({
 
     extends_clause: $ => seq(kw('Class', 'extends'), field('super', $.identifier), $._terminator),
 
+    // Mirrors var_declaration: `property a; b : Text` declares several names
+    // sharing one type, and `: Type := default` / bare `:= default` are the
+    // one-line initialization forms.
     property_declaration: $ => seq(
       'property',
       field('name', $.identifier),
+      repeat(seq(';', field('name', $.identifier))),
       optional(seq(':', field('type', $._type))),
       optional(seq(':=', field('default', $._expression))),
       $._terminator,
@@ -405,7 +409,11 @@ module.exports = grammar({
     interprocess_variable: $ => token(seq('<>', /[A-Za-z_][A-Za-z0-9_]*/)),
     identifier:            $ => /[A-Za-z_][A-Za-z0-9_]*/,
 
-    number: $ => /\d+(\.\d+)?([eE][-+]?\d+)?/,
+    // Decimal with optional fraction and exponent (range is IEEE double,
+    // ±1.7e±308), or 0x/0X hexadecimal — official command docs use
+    // 0xFFFFFFFF as a literal. Longest-match keeps 0xFF from splitting into
+    // number 0 + identifier xFF. No binary/octal form exists in 4D.
+    number: $ => /0[xX][0-9A-Fa-f]+|\d+(\.\d+)?([eE][-+]?\d+)?/,
     string: $ => token(seq('"', repeat(choice(/[^"\\\n]/, /\\./)), '"')),
 
     _type: $ => choice($.identifier, seq('cs', '.', $.identifier), seq('4D', '.', $.identifier)),

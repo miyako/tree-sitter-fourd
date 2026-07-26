@@ -68,6 +68,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -188,6 +192,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -285,6 +293,10 @@
           },
           {
             "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
             "named": true
           },
           {
@@ -460,6 +472,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -615,6 +631,10 @@
           },
           {
             "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
             "named": true
           },
           {
@@ -784,6 +804,10 @@
           "named": true
         },
         {
+          "type": "parameter_indirection",
+          "named": true
+        },
+        {
           "type": "postfix_expression",
           "named": true
         },
@@ -824,6 +848,28 @@
         "types": [
           {
             "type": "parameter",
+            "named": true
+          }
+        ]
+      },
+      "return_type": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": ".",
+            "named": false
+          },
+          {
+            "type": "4D",
+            "named": false
+          },
+          {
+            "type": "cs",
+            "named": false
+          },
+          {
+            "type": "identifier",
             "named": true
           }
         ]
@@ -898,6 +944,10 @@
         },
         {
           "type": "object_literal",
+          "named": true
+        },
+        {
+          "type": "parameter_indirection",
           "named": true
         },
         {
@@ -1016,6 +1066,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -1107,6 +1161,10 @@
           },
           {
             "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
             "named": true
           },
           {
@@ -1229,6 +1287,10 @@
           "named": true
         },
         {
+          "type": "parameter_indirection",
+          "named": true
+        },
+        {
           "type": "postfix_expression",
           "named": true
         },
@@ -1348,6 +1410,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -1439,6 +1505,10 @@
           },
           {
             "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
             "named": true
           },
           {
@@ -1536,6 +1606,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -1627,6 +1701,10 @@
           },
           {
             "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
             "named": true
           },
           {
@@ -1976,6 +2054,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -2126,6 +2208,10 @@
           "named": true
         },
         {
+          "type": "parameter_indirection",
+          "named": true
+        },
+        {
           "type": "postfix_expression",
           "named": true
         },
@@ -2255,6 +2341,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -2292,7 +2382,7 @@
     "fields": {
       "name": {
         "multiple": false,
-        "required": true,
+        "required": false,
         "types": [
           {
             "type": "local_variable",
@@ -2318,6 +2408,110 @@
           },
           {
             "type": "identifier",
+            "named": true
+          }
+        ]
+      }
+    }
+  },
+  {
+    "type": "parameter_indirection",
+    "named": true,
+    "fields": {
+      "index": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "(",
+            "named": false
+          },
+          {
+            "type": ")",
+            "named": false
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "collection_literal",
+            "named": true
+          },
+          {
+            "type": "command",
+            "named": true
+          },
+          {
+            "type": "command_name",
+            "named": true
+          },
+          {
+            "type": "constant",
+            "named": true
+          },
+          {
+            "type": "constant_name",
+            "named": true
+          },
+          {
+            "type": "date_literal",
+            "named": true
+          },
+          {
+            "type": "field_reference",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "interprocess_variable",
+            "named": true
+          },
+          {
+            "type": "local_variable",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "ternary_expression",
+            "named": true
+          },
+          {
+            "type": "time_literal",
+            "named": true
+          },
+          {
+            "type": "try_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
             "named": true
           }
         ]
@@ -2416,6 +2610,10 @@
         },
         {
           "type": "object_literal",
+          "named": true
+        },
+        {
+          "type": "parameter_indirection",
           "named": true
         },
         {
@@ -2518,6 +2716,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -2548,7 +2750,7 @@
         ]
       },
       "name": {
-        "multiple": false,
+        "multiple": true,
         "required": true,
         "types": [
           {
@@ -2647,6 +2849,10 @@
           },
           {
             "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
             "named": true
           },
           {
@@ -2903,6 +3109,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -2994,6 +3204,10 @@
           },
           {
             "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
             "named": true
           },
           {
@@ -3091,6 +3305,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -3180,6 +3398,10 @@
         },
         {
           "type": "object_literal",
+          "named": true
+        },
+        {
+          "type": "parameter_indirection",
           "named": true
         },
         {
@@ -3396,6 +3618,10 @@
           "named": true
         },
         {
+          "type": "parameter_indirection",
+          "named": true
+        },
+        {
           "type": "postfix_expression",
           "named": true
         },
@@ -3492,6 +3718,10 @@
           },
           {
             "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
             "named": true
           },
           {
@@ -3611,6 +3841,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -3711,6 +3945,10 @@
             "named": true
           },
           {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
             "type": "postfix_expression",
             "named": true
           },
@@ -3806,6 +4044,10 @@
   },
   {
     "type": "#DECLARE",
+    "named": false
+  },
+  {
+    "type": "${",
     "named": false
   },
   {

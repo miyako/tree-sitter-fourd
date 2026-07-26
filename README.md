@@ -124,7 +124,8 @@ multi-word, so they are table-driven rather than a keyword list.
 | Form | Type | Notes |
 |---|---|---|
 | `"text"` | Text | |
-| `123`, `1.5`, `1e3` | Number | |
+| `123`, `1.5`, `1e3` | Number | Exponent form covers the Real range, ±1.7e±308 |
+| `0xFFFFFFFF` | Number | Hex, `0x`/`0X` prefix — used as a literal in official command docs. No binary or octal form |
 | `!2004-09-29!` | Date | ISO `!YYYY-MM-DD!` is the standard form |
 | `!00-00-00!` | Date | **The null date.** There is no `!!` shorthand |
 | `!12/04/98!` | Date | Two-digit years accepted for compatibility |
@@ -291,6 +292,12 @@ end of the class file.
 
 Also: `Class extends <superclass>`, `property`, `Alias`, `Super`, and computed
 attributes via `Function get` / `Function set`.
+
+`property` and `var` share one declaration shape **[verified]**: several names
+may share a type (`property a; b : Text`, `var $x; $y; z : Integer` — note the
+unsigilled process variable in the list), the type may be omitted (Variant),
+and declaration and initialization combine on one line, with or without the
+type: `var $t : Text:="hello"`, `var $n:=42`, `property itemList : Collection:=[]`.
 
 Method files declare parameters with the `#DECLARE` directive. The return is
 introduced by `->` (naming an output variable) or by a bare `: Type` that pairs
