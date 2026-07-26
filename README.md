@@ -122,10 +122,27 @@ multi-word, so they are table-driven rather than a keyword list.
 |---|---|---|
 | `"text"` | Text | |
 | `123`, `1.5`, `1e3` | Number | |
-| `!2018/01/21!`, `!00-00-00!` | Date | `!!` is the null date |
+| `!2004-09-29!` | Date | ISO `!YYYY-MM-DD!` is the standard form |
+| `!00-00-00!` | Date | **The null date.** There is no `!!` shorthand |
+| `!12/04/98!` | Date | Two-digit years accepted for compatibility |
 | `?00:00:00?` | Time | **[reported]** delimiter pair, both ends `?` |
 | `[1;2;3]` | Collection | `;` separates elements |
-| `{"a": 1}` | Object | ECMAScript-like, `:` separates key and value |
+| `{a: 1; b: 2}` | Object | Keys **unquoted**, pairs separated by `;` |
+
+**Dates.** A date literal is enclosed in exclamation marks and structured in ISO
+format. The hyphen is standard, but 4D accepts two-digit years for compatibility
+— assumed 20th or 21st century by comparison against 30, adjustable with
+`SET DEFAULT CENTURY` — and under *Use regional system settings* the system's
+own delimiter applies, commonly a slash. The Code Editor offers a shortcut for
+the null date (type `!`, press Enter), which expands to the full `!00-00-00!`.
+
+**Objects.** An object literal is a semicolon-separated list of property/value
+pairs in curly braces. The notation *resembles* JSON but is not JSON: property
+names are unquoted and the separator is `;`, not `,`.
+
+```4d
+$o2:={a: "foo"; b: 42; c: {}; d: ($toto) ? True : False}
+```
 
 The collection literal is documented: the `[]` operator creates a collection
 literal, a list of zero or more expressions enclosed in square brackets.
@@ -140,6 +157,11 @@ exist.
 Note that `#` is not a comment.
 
 **Logical.** `&` and, `|` or.
+
+**Short-circuit.** `&&` and `||`. 4D supports the truthy/falsy concept from
+JavaScript, which these operators use. They follow C precedence, sitting *below*
+their bitwise counterparts — `$a | $b && $c` groups as `($a | $b) && $c`.
+Longest-match lexing is what keeps `&&` clear of `&`.
 
 **Arithmetic.** `+`, `-`, `*`, `/`, `%`, and `\` for **integer division**
 **[reported]**. The backslash doubles as the line-continuation marker (§2.7),
@@ -245,6 +267,13 @@ end of the class file.
 
 Also: `Class extends <superclass>`, `property`, `Alias`, `Super`, and computed
 attributes via `Function get` / `Function set`.
+
+Method files declare parameters with the `#DECLARE` directive, whose return is
+introduced by `->`:
+
+```4d
+#DECLARE($in : Text) -> $o : Object
+```
 
 ### 2.11 Embedded SQL **[verified / reported]**
 
@@ -443,7 +472,7 @@ adv(l);                                     // '?'
 if (!iswdigit(l->lookahead)) return false;  // "? " or "?+" → not a literal
 ```
 
-### 4.7 Significant newlines
+### 4.7 Significant newlines and line continuation
 
 Newline terminates a statement but must be ignored inside a bracketed
 expression. Rather than tracking bracket depth in scanner state, the scanner
@@ -516,12 +545,14 @@ nodes throughout the injected tree.
 interpolations into separate nodes and injecting only the gaps via multiple
 `@injection.content` captures.
 
-### 5.5 `Try` is declared as a conflict, not solved
+### 5.5 (retired) `Try` needs no conflict declaration
 
-`Try(...)` and `Try` + a parenthesized first statement are ambiguous until the
-newline. This is handled by declaring a GLR conflict, which resolves correctly
-but costs parse time in the ambiguous region. A deterministic fix would scan to
-end-of-line in the scanner and emit distinct tokens.
+Kept as a record of a corrected error. This section previously claimed the
+`Try(...)` / `Try` block ambiguity was resolved by a declared GLR conflict.
+It is not ambiguous at all: `try_statement` requires a `_terminator` immediately
+after `Try` and `try_expression` requires `(`, so one token of lookahead
+separates them. Tree-sitter confirms this — declaring the conflict produces
+`Warning: unnecessary conflicts`. The declaration has been removed.
 
 ### 5.6 Semantics are out of scope
 
@@ -537,14 +568,21 @@ enabled, formulas stored in form JSON, or legacy `.4db` exports may contain
 French. Supporting these means a second keyword table and a second builtin
 table — a substantial addition, not a small one.
 
-### 5.8 Line continuation defeats naïve line-based tooling
+### 5.8 `return` inside `Formula()` is not handled
+
+4D permits `Formula(return This.ob1.age+10)` — a `return` in expression
+position, with no statement terminator. `jump_statement` requires a
+`_terminator`, so this parses as an error. Fixing it means admitting `return`
+as an expression form, which risks ambiguity with the statement form.
+
+### 5.9 Line continuation defeats naïve line-based tooling
 
 A trailing `\` joins lines, so anything downstream that assumes one statement
 per physical line — grep-based linters, diff hunks, `#line`-style mapping — will
 misread continued statements. The parser handles it correctly; consumers of the
 tree may not.
 
-### 5.9 Error recovery is untuned
+### 5.10 Error recovery is untuned
 
 `_statement` has no permissive catch-all alternative yet. Adding an
 `unknown_line` fallback would convert many `ERROR` nodes into something a
