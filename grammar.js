@@ -126,10 +126,17 @@ module.exports = grammar({
       ')',
     ),
 
-    parameter: $ => seq(
-      optional('...'),
-      field('name', $.local_variable),
-      optional(seq(':', field('type', $._type))),
+    // Two shapes: `$name : Type`, or the variadic `... : Type` — the ellipsis
+    // is NAMELESS in the documented form (`#DECLARE(... : Real)`), must sit
+    // last, and its extra arguments are reached via ${N} indirection. The
+    // optional name after '...' is permissiveness, not documentation.
+    // "Last position only" is a lint rule, not a grammar rule (§5.6 stance).
+    parameter: $ => choice(
+      seq(field('name', $.local_variable),
+          optional(seq(':', field('type', $._type)))),
+      seq('...',
+          optional(field('name', $.local_variable)),
+          optional(seq(':', field('type', $._type)))),
     ),
 
     // ------------------------------------------------------------ statements
@@ -184,7 +191,12 @@ module.exports = grammar({
     declare_statement: $ => seq(
       token('#DECLARE'),
       optional($.parameter_list),
-      optional(seq('->', field('return', $.parameter))),
+      // Both return forms: `-> $out : Type` names the output variable;
+      // `: Type` alone pairs with a `return` statement — same as Function.
+      optional(choice(
+        seq('->', field('return', $.parameter)),
+        seq(':', field('return_type', $._type)),
+      )),
       $._terminator,
     ),
 
@@ -353,6 +365,7 @@ module.exports = grammar({
       $.time_literal,
       $.date_literal,
       $.local_variable,
+      $.parameter_indirection,
       $.interprocess_variable,
       $.identifier,
       seq('(', $._expression, ')'),
@@ -382,6 +395,11 @@ module.exports = grammar({
     // — and pairs are separated by ';', not ','. The notation resembles JSON
     // but is not JSON.
     object_pair: $ => seq(field('key', $.identifier), ':', field('value', $._expression)),
+
+    // ${N} parameter indirection: the index is a full expression (`${$i}`).
+    // '${' is one token, so it cannot collide with local_variable — that
+    // token requires an alphanumeric after '$' and dies on '{'.
+    parameter_indirection: $ => seq('${', field('index', $._expression), '}'),
 
     local_variable:        $ => token(seq('$', /[A-Za-z0-9_]+/)),
     interprocess_variable: $ => token(seq('<>', /[A-Za-z_][A-Za-z0-9_]*/)),

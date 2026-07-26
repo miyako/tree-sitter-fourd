@@ -292,12 +292,31 @@ end of the class file.
 Also: `Class extends <superclass>`, `property`, `Alias`, `Super`, and computed
 attributes via `Function get` / `Function set`.
 
-Method files declare parameters with the `#DECLARE` directive, whose return is
-introduced by `->`:
+Method files declare parameters with the `#DECLARE` directive. The return is
+introduced by `->` (naming an output variable) or by a bare `: Type` that pairs
+with a `return` statement — both forms also exist on `Function`:
 
 ```4d
 #DECLARE($in : Text) -> $o : Object
+#DECLARE($in : Text) : Object
 ```
+
+**Variadic parameters (v20 R3+) [verified].** An ellipsis in last position
+declares a variable number of trailing parameters. It is **nameless**, takes an
+optional type, and the extra arguments are reached with the `${N}` indirection
+syntax, where N is a full expression:
+
+```4d
+#DECLARE(... : Real) : Real
+For ($i; 1; Count parameters)
+   $total+=${$i}
+End for
+```
+
+In the grammar: `parameter` is either `$name : Type` or `... : Type`;
+`${N}` is a `parameter_indirection` primary, whose `${` token cannot collide
+with `local_variable` because that token requires an alphanumeric after `$`.
+Restricting `...` to last position is left to a linter (§5.6).
 
 ### 2.11 Embedded SQL **[verified / reported]**
 
@@ -691,6 +710,7 @@ one changed the implementation.
 | Does `defer` accept arbitrary expressions? | Yes | `jump_statement` keeps the full `$._expression` |
 | Are the parens in `If (…)` statement syntax? | No — the condition is a plain expression; `If ($a) \| ($b)` is legal **[corpus]** | `If`/`While`/`Until`/case labels take a bare `$._expression` (§4.9) |
 | Is every argument an expression? | No — `*`, `>`, `<` marker parameters exist **[corpus]** | `_argument` admits the marker tokens (§2.6) |
+| Is the variadic `...` a named parameter? | No — it is nameless, with optional type; extras are read via `${N}` **[verified]** | `parameter` split into named / variadic shapes; `parameter_indirection` added (§2.10) |
 
 No open questions remain. New ones should be added here rather than resolved
 silently — the tagging convention in this document exists because untracked
