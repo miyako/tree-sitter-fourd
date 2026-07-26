@@ -16,6 +16,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -60,6 +64,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -81,6 +89,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -140,6 +152,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -184,6 +200,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -205,6 +225,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -244,6 +268,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -288,6 +316,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -309,6 +341,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -394,7 +430,27 @@
             "named": false
           },
           {
+            "type": "?+",
+            "named": false
+          },
+          {
+            "type": "?-",
+            "named": false
+          },
+          {
+            "type": "??",
+            "named": false
+          },
+          {
             "type": "\\",
+            "named": false
+          },
+          {
+            "type": "^",
+            "named": false
+          },
+          {
+            "type": "^|",
             "named": false
           },
           {
@@ -418,6 +474,10 @@
           {
             "type": ")",
             "named": false
+          },
+          {
+            "type": "assignment",
+            "named": true
           },
           {
             "type": "binary_expression",
@@ -464,6 +524,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -485,6 +549,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -515,10 +583,6 @@
         "multiple": true,
         "required": false,
         "types": [
-          {
-            "type": "assignment",
-            "named": true
-          },
           {
             "type": "case_statement",
             "named": true
@@ -582,6 +646,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -626,6 +694,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -647,6 +719,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -677,10 +753,6 @@
         "multiple": true,
         "required": false,
         "types": [
-          {
-            "type": "assignment",
-            "named": true
-          },
           {
             "type": "case_statement",
             "named": true
@@ -752,6 +824,10 @@
       "required": false,
       "types": [
         {
+          "type": "assignment",
+          "named": true
+        },
+        {
           "type": "binary_expression",
           "named": true
         },
@@ -796,6 +872,10 @@
           "named": true
         },
         {
+          "type": "multiword_name",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -817,6 +897,10 @@
         },
         {
           "type": "system_variable",
+          "named": true
+        },
+        {
+          "type": "table_reference",
           "named": true
         },
         {
@@ -865,8 +949,8 @@
             "named": false
           },
           {
-            "type": "cs",
-            "named": false
+            "type": "command",
+            "named": true
           },
           {
             "type": "identifier",
@@ -894,6 +978,10 @@
       "multiple": false,
       "required": true,
       "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
         {
           "type": "binary_expression",
           "named": true
@@ -939,6 +1027,10 @@
           "named": true
         },
         {
+          "type": "multiword_name",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -960,6 +1052,10 @@
         },
         {
           "type": "system_variable",
+          "named": true
+        },
+        {
+          "type": "table_reference",
           "named": true
         },
         {
@@ -1014,6 +1110,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1058,6 +1158,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -1079,6 +1183,120 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
+            "named": true
+          },
+          {
+            "type": "ternary_expression",
+            "named": true
+          },
+          {
+            "type": "time_literal",
+            "named": true
+          },
+          {
+            "type": "try_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      },
+      "guard": {
+        "multiple": true,
+        "required": false,
+        "types": [
+          {
+            "type": "(",
+            "named": false
+          },
+          {
+            "type": ")",
+            "named": false
+          },
+          {
+            "type": "assignment",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "collection_literal",
+            "named": true
+          },
+          {
+            "type": "command",
+            "named": true
+          },
+          {
+            "type": "command_name",
+            "named": true
+          },
+          {
+            "type": "constant",
+            "named": true
+          },
+          {
+            "type": "constant_name",
+            "named": true
+          },
+          {
+            "type": "date_literal",
+            "named": true
+          },
+          {
+            "type": "field_reference",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "interprocess_variable",
+            "named": true
+          },
+          {
+            "type": "local_variable",
+            "named": true
+          },
+          {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -1112,6 +1330,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1156,6 +1378,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -1177,6 +1403,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -1279,6 +1509,10 @@
           "named": true
         },
         {
+          "type": "multiword_name",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -1308,6 +1542,10 @@
         },
         {
           "type": "system_variable",
+          "named": true
+        },
+        {
+          "type": "table_reference",
           "named": true
         },
         {
@@ -1358,6 +1596,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1402,6 +1644,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -1423,6 +1669,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -1456,6 +1706,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1500,6 +1754,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -1521,6 +1779,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -1554,6 +1816,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1598,6 +1864,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -1619,6 +1889,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -1652,6 +1926,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -1696,6 +1974,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -1717,6 +1999,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -1742,10 +2028,6 @@
       "multiple": true,
       "required": false,
       "types": [
-        {
-          "type": "assignment",
-          "named": true
-        },
         {
           "type": "case_statement",
           "named": true
@@ -1806,7 +2088,19 @@
         "required": false,
         "types": [
           {
+            "type": "event",
+            "named": false
+          },
+          {
             "type": "get",
+            "named": false
+          },
+          {
+            "type": "orderBy",
+            "named": false
+          },
+          {
+            "type": "query",
             "named": false
           },
           {
@@ -1819,10 +2113,6 @@
         "multiple": true,
         "required": false,
         "types": [
-          {
-            "type": "assignment",
-            "named": true
-          },
           {
             "type": "case_statement",
             "named": true
@@ -1890,6 +2180,20 @@
           {
             "type": "identifier",
             "named": true
+          },
+          {
+            "type": "multiword_name",
+            "named": true
+          }
+        ]
+      },
+      "return": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "parameter",
+            "named": true
           }
         ]
       },
@@ -1906,8 +2210,8 @@
             "named": false
           },
           {
-            "type": "cs",
-            "named": false
+            "type": "command",
+            "named": true
           },
           {
             "type": "identifier",
@@ -1935,10 +2239,6 @@
         "multiple": true,
         "required": false,
         "types": [
-          {
-            "type": "assignment",
-            "named": true
-          },
           {
             "type": "case_statement",
             "named": true
@@ -2002,6 +2302,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -2046,6 +2350,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -2070,6 +2378,10 @@
             "named": true
           },
           {
+            "type": "table_reference",
+            "named": true
+          },
+          {
             "type": "ternary_expression",
             "named": true
           },
@@ -2091,10 +2403,6 @@
         "multiple": true,
         "required": false,
         "types": [
-          {
-            "type": "assignment",
-            "named": true
-          },
           {
             "type": "case_statement",
             "named": true
@@ -2152,9 +2460,13 @@
     "named": true,
     "fields": {},
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
         {
           "type": "binary_expression",
           "named": true
@@ -2200,6 +2512,10 @@
           "named": true
         },
         {
+          "type": "multiword_name",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -2221,6 +2537,10 @@
         },
         {
           "type": "system_variable",
+          "named": true
+        },
+        {
+          "type": "table_reference",
           "named": true
         },
         {
@@ -2248,6 +2568,25 @@
     "fields": {}
   },
   {
+    "type": "multiword_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        },
+        {
+          "type": "number",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "object_literal",
     "named": true,
     "fields": {},
@@ -2273,6 +2612,14 @@
           {
             "type": "identifier",
             "named": true
+          },
+          {
+            "type": "local_variable",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
           }
         ]
       },
@@ -2287,6 +2634,10 @@
           {
             "type": ")",
             "named": false
+          },
+          {
+            "type": "assignment",
+            "named": true
           },
           {
             "type": "binary_expression",
@@ -2333,6 +2684,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -2354,6 +2709,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -2403,8 +2762,8 @@
             "named": false
           },
           {
-            "type": "cs",
-            "named": false
+            "type": "command",
+            "named": true
           },
           {
             "type": "identifier",
@@ -2429,6 +2788,10 @@
           {
             "type": ")",
             "named": false
+          },
+          {
+            "type": "assignment",
+            "named": true
           },
           {
             "type": "binary_expression",
@@ -2475,6 +2838,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -2496,6 +2863,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -2544,6 +2915,10 @@
           {
             "type": "identifier",
             "named": true
+          },
+          {
+            "type": "local_variable",
+            "named": true
           }
         ]
       }
@@ -2552,6 +2927,10 @@
       "multiple": true,
       "required": true,
       "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
         {
           "type": "binary_expression",
           "named": true
@@ -2605,6 +2984,10 @@
           "named": true
         },
         {
+          "type": "multiword_name",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -2626,6 +3009,10 @@
         },
         {
           "type": "system_variable",
+          "named": true
+        },
+        {
+          "type": "table_reference",
           "named": true
         },
         {
@@ -2662,6 +3049,10 @@
           {
             "type": ")",
             "named": false
+          },
+          {
+            "type": "assignment",
+            "named": true
           },
           {
             "type": "binary_expression",
@@ -2708,6 +3099,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -2729,6 +3124,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -2772,8 +3171,8 @@
             "named": false
           },
           {
-            "type": "cs",
-            "named": false
+            "type": "command",
+            "named": true
           },
           {
             "type": "identifier",
@@ -2798,6 +3197,10 @@
           {
             "type": ")",
             "named": false
+          },
+          {
+            "type": "assignment",
+            "named": true
           },
           {
             "type": "binary_expression",
@@ -2844,6 +3247,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -2865,6 +3272,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -2890,10 +3301,6 @@
       "multiple": true,
       "required": false,
       "types": [
-        {
-          "type": "assignment",
-          "named": true
-        },
         {
           "type": "case_statement",
           "named": true
@@ -2953,10 +3360,6 @@
       "multiple": true,
       "required": false,
       "types": [
-        {
-          "type": "assignment",
-          "named": true
-        },
         {
           "type": "attributes_header",
           "named": true
@@ -3057,6 +3460,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -3101,6 +3508,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -3122,6 +3533,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -3155,6 +3570,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -3199,6 +3618,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -3220,6 +3643,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -3253,6 +3680,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -3297,6 +3728,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -3318,6 +3753,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -3348,6 +3787,10 @@
       "multiple": false,
       "required": true,
       "types": [
+        {
+          "type": "assignment",
+          "named": true
+        },
         {
           "type": "binary_expression",
           "named": true
@@ -3393,6 +3836,10 @@
           "named": true
         },
         {
+          "type": "multiword_name",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -3414,6 +3861,10 @@
         },
         {
           "type": "system_variable",
+          "named": true
+        },
+        {
+          "type": "table_reference",
           "named": true
         },
         {
@@ -3443,10 +3894,6 @@
         "multiple": true,
         "required": false,
         "types": [
-          {
-            "type": "assignment",
-            "named": true
-          },
           {
             "type": "case_statement",
             "named": true
@@ -3501,10 +3948,6 @@
         "multiple": true,
         "required": false,
         "types": [
-          {
-            "type": "assignment",
-            "named": true
-          },
           {
             "type": "case_statement",
             "named": true
@@ -3566,6 +4009,10 @@
       "required": true,
       "types": [
         {
+          "type": "assignment",
+          "named": true
+        },
+        {
           "type": "binary_expression",
           "named": true
         },
@@ -3610,6 +4057,10 @@
           "named": true
         },
         {
+          "type": "multiword_name",
+          "named": true
+        },
+        {
           "type": "number",
           "named": true
         },
@@ -3631,6 +4082,10 @@
         },
         {
           "type": "system_variable",
+          "named": true
+        },
+        {
+          "type": "table_reference",
           "named": true
         },
         {
@@ -3661,46 +4116,6 @@
         "required": true,
         "types": [
           {
-            "type": "(",
-            "named": false
-          },
-          {
-            "type": ")",
-            "named": false
-          },
-          {
-            "type": "binary_expression",
-            "named": true
-          },
-          {
-            "type": "collection_literal",
-            "named": true
-          },
-          {
-            "type": "command",
-            "named": true
-          },
-          {
-            "type": "command_name",
-            "named": true
-          },
-          {
-            "type": "constant",
-            "named": true
-          },
-          {
-            "type": "constant_name",
-            "named": true
-          },
-          {
-            "type": "date_literal",
-            "named": true
-          },
-          {
-            "type": "field_reference",
-            "named": true
-          },
-          {
             "type": "identifier",
             "named": true
           },
@@ -3713,43 +4128,7 @@
             "named": true
           },
           {
-            "type": "number",
-            "named": true
-          },
-          {
-            "type": "object_literal",
-            "named": true
-          },
-          {
             "type": "parameter_indirection",
-            "named": true
-          },
-          {
-            "type": "postfix_expression",
-            "named": true
-          },
-          {
-            "type": "string",
-            "named": true
-          },
-          {
-            "type": "system_variable",
-            "named": true
-          },
-          {
-            "type": "ternary_expression",
-            "named": true
-          },
-          {
-            "type": "time_literal",
-            "named": true
-          },
-          {
-            "type": "try_expression",
-            "named": true
-          },
-          {
-            "type": "unary_expression",
             "named": true
           }
         ]
@@ -3767,8 +4146,8 @@
             "named": false
           },
           {
-            "type": "cs",
-            "named": false
+            "type": "command",
+            "named": true
           },
           {
             "type": "identifier",
@@ -3789,6 +4168,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -3833,6 +4216,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -3854,6 +4241,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -3893,6 +4284,10 @@
             "named": false
           },
           {
+            "type": "assignment",
+            "named": true
+          },
+          {
             "type": "binary_expression",
             "named": true
           },
@@ -3937,6 +4332,10 @@
             "named": true
           },
           {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
             "type": "number",
             "named": true
           },
@@ -3958,6 +4357,10 @@
           },
           {
             "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
             "named": true
           },
           {
@@ -3983,10 +4386,6 @@
       "multiple": true,
       "required": false,
       "types": [
-        {
-          "type": "assignment",
-          "named": true
-        },
         {
           "type": "case_statement",
           "named": true
@@ -4087,6 +4486,10 @@
     "named": false
   },
   {
+    "type": ",",
+    "named": false
+  },
+  {
     "type": "-",
     "named": false
   },
@@ -4163,6 +4566,18 @@
     "named": false
   },
   {
+    "type": "?+",
+    "named": false
+  },
+  {
+    "type": "?-",
+    "named": false
+  },
+  {
+    "type": "??",
+    "named": false
+  },
+  {
     "type": "Catch",
     "named": false
   },
@@ -4211,6 +4626,14 @@
     "named": false
   },
   {
+    "type": "^",
+    "named": false
+  },
+  {
+    "type": "^|",
+    "named": false
+  },
+  {
     "type": "attributes_header",
     "named": true
   },
@@ -4251,15 +4674,15 @@
     "named": false
   },
   {
-    "type": "cs",
-    "named": false
-  },
-  {
     "type": "date_literal",
     "named": true
   },
   {
     "type": "defer",
+    "named": false
+  },
+  {
+    "type": "event",
     "named": false
   },
   {
@@ -4269,6 +4692,10 @@
   {
     "type": "field_reference",
     "named": true
+  },
+  {
+    "type": "function",
+    "named": false
   },
   {
     "type": "get",
@@ -4307,7 +4734,15 @@
     "named": false
   },
   {
+    "type": "orderBy",
+    "named": false
+  },
+  {
     "type": "property",
+    "named": false
+  },
+  {
+    "type": "query",
     "named": false
   },
   {
@@ -4344,6 +4779,10 @@
   },
   {
     "type": "system_variable",
+    "named": true
+  },
+  {
+    "type": "table_reference",
     "named": true
   },
   {
