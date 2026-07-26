@@ -8,7 +8,10 @@ why it is built that way, and — at length — what it does not handle.
 **Epistemic note.** Sections marked **[verified]** are confirmed against 4D's
 official documentation or blog. Sections marked **[reported]** come from a 4D
 developer's direct knowledge. Sections marked **[unverified]** are inferred and
-should be confirmed against a real 21 R4 install before you rely on them. This
+should be confirmed against a real 21 R4 install before you rely on them.
+Sections marked **[corpus]** are demonstrated by production `.4dm` source that
+the parser is tested against — the strongest evidence of the three, since it
+shows what 4D actually accepts rather than what the documentation says. This
 distinction is kept deliberately visible; several early design decisions in this
 project were wrong because an assumption went unmarked.
 
@@ -181,6 +184,12 @@ postfix (dereference, `$p->`).
 
 **Legacy array element.** `$arr{5}` uses braces.
 
+**Marker parameters [verified / corpus].** Some command parameters are not
+expressions at all: the trailing `*` (`Lowercase($c; *)`) and the `>` / `<`
+direction markers of commands like `ORDER BY`. They are bare tokens in argument
+position, so an argument list is `choice(expression, '*', '>', '<')`, not a
+list of expressions.
+
 ### 2.7 Statement structure **[verified]**
 
 - **Newline terminates a statement.**
@@ -210,6 +219,21 @@ End try
 
 `Case of` branch labels are a bare `:` followed by a parenthesized condition.
 Branches are **implicitly terminated** by the next `:`, `Else`, or `End case`.
+
+**The condition parentheses are not statement syntax [corpus].** `If`, `While`,
+`Until`, and `Case of` labels take an ordinary expression. The customary parens
+are just a parenthesized expression, and production code freely writes
+conditions whose parens do not wrap the whole thing:
+
+```4d
+If ($char=" ") | ($char="_") | Match regex:C1019("\\d"; $char)
+```
+
+The condition is the entire `|` chain. A grammar that hard-codes
+`'If' '(' expr ')'` truncates the condition at the first `)` and errors on the
+`|` — this was a real bug in this parser (§4.9). `For` and `For each` are the
+exception: their parentheses genuinely delimit a `;`-separated header and stay
+in the statement rule.
 
 ### 2.9 Error handling and jumps **[verified]**
 
@@ -499,6 +523,39 @@ cannot false-terminate the block.
 
 See §5.4 for why this is currently disabled by default.
 
+### 4.9 Conditions are bare expressions
+
+An earlier version wrote `'If' '(' expr ')'`, mirroring the documentation's
+`If(Boolean_Expression)`. The first real-world method broke it: in
+`If ($a=1) | ($b=2)` the parser committed the `(` as statement syntax, took
+`($a=1)` as the whole condition, and errored at the `|`. The rules are now
+
+```js
+if_statement: $ => seq('If', field('condition', $._expression), $._terminator, ...)
+```
+
+and likewise `While`, `Until`, and `case_branch`. The parenthesized form still
+parses — the parens are simply a parenthesized-expression primary.
+
+The same corpus file surfaced the marker parameters (§2.6):
+`Lowercase:C14($char; *)` errored on the bare `*`. Argument lists are now
+
+```js
+_argument: $ => choice($._expression, '*', '>', '<'),
+```
+
+which stays LR(1)-clean because none of the three markers can begin an
+expression.
+
+**A debugging lesson worth recording:** the ERROR node's start position is not
+where parsing failed. When recovery hits a fault it pops unfinished enclosing
+frames off the stack, so the single `|` fault on an `If` line inside a
+`For each` produced one ERROR spanning from the `For each` header to EOF, with
+the header's already-parsed children dumped inside as orphans. When reading
+corpus output, locate the first fault by finding the last *well-formed* child
+inside the ERROR, not by the ERROR's start — and fix that one fault before
+believing anything the tree says after it.
+
 ---
 
 ## 5. Limitations
@@ -620,8 +677,9 @@ to highlight — an unpleasant thing to debug from symptoms.
 
 ## 7. Resolved questions
 
-Every question raised during design has since been answered by a 4D developer
-**[reported]**. Recorded here because each one changed the implementation.
+Every question raised during design has since been answered — by a 4D developer
+**[reported]** or by production source **[corpus]**. Recorded here because each
+one changed the implementation.
 
 | Question | Answer | Consequence |
 |---|---|---|
@@ -631,6 +689,8 @@ Every question raised during design has since been answered by a 4D developer
 | What is the maximum builtin word count? | 6 for commands, 7 for constants | `FOURD_MAX_BUILTIN_WORDS` = 7 |
 | May anything follow `End SQL` on its line? | No, not even a comment | Strict terminator check; prevents false termination |
 | Does `defer` accept arbitrary expressions? | Yes | `jump_statement` keeps the full `$._expression` |
+| Are the parens in `If (…)` statement syntax? | No — the condition is a plain expression; `If ($a) \| ($b)` is legal **[corpus]** | `If`/`While`/`Until`/case labels take a bare `$._expression` (§4.9) |
+| Is every argument an expression? | No — `*`, `>`, `<` marker parameters exist **[corpus]** | `_argument` admits the marker tokens (§2.6) |
 
 No open questions remain. New ones should be added here rather than resolved
 silently — the tagging convention in this document exists because untracked
