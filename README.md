@@ -442,6 +442,24 @@ An `is_builtin_prefix()` check provides early bailout: once nothing in the table
 extends the accumulated prefix, further words cannot help, and ordinary
 identifiers stop dragging the lexer forward.
 
+#### The grammar-level fallback: `multiword_name`
+
+The scanner's builtin table cannot contain component and plugin commands
+(`VP SET CELL STYLE`, `WP UpdateWidget`) — they are project methods, not
+builtins. The grammar therefore carries a fallback rule:
+
+```js
+multiword_name: $ => prec.right(seq($.identifier, repeat1(choice($.identifier, $.number))))
+```
+
+This is safe because adjacent identifiers are illegal everywhere else in the
+expression grammar, and it composes: `New OAuth2 provider($p)` is a
+`multiword_name` receiving a postfix call, `FORM Event.code` is one receiving
+a member access. Where the real scanner's `command_name` token matches, it
+wins; the fallback catches everything the table cannot know. Later words may
+be bare numbers (`TEST Sign Fake 2`), but the first word must be an
+identifier, so the rule can never start where a number literal belongs.
+
 ### 4.3 Implicit block termination
 
 Function bodies have no `End function`. They end at the next `Function`,
@@ -584,6 +602,30 @@ believing anything the tree says after it.
 
 ---
 
+### 4.10 Lexical precedence beats match length
+
+The corpus contained methods named `00_Start` and the tokenized namespace
+`4D:C1709` — identifiers and commands with leading digits. The obvious fix
+(broaden the regexes, give `number` a token precedence to win ties like
+`123`) silently broke both: **tree-sitter checks lexical precedence before
+match length**, so `number` at precedence 1 claimed the two characters `00`
+over the eight-character identifier, and `4` over the whole `4D:C1709`
+command.
+
+The working design uses no precedence at all. The identifier's digit-leading
+branch requires a letter after the digits —
+
+```js
+identifier: $ => /([A-Za-z_…]|[0-9]+[A-Za-z_…])[A-Za-z0-9_…]*/
+```
+
+— so a pure number can never lex as an identifier and length decides
+(`00_Start` wins at 8 chars). The only remaining collisions are equal-length
+ties like `1e3` and `0xFF`, which fall through to tree-sitter's last
+tie-breaker, rule order; `number` is defined before `identifier` for exactly
+that reason. The general lesson: token precedence is a hammer that flattens
+*length*, not a tie-breaker — reach for disjoint regexes first.
+
 ## 5. Limitations
 
 ### 5.1 Ternary versus time literal is genuinely ambiguous
@@ -644,14 +686,27 @@ The grammar is deliberately permissive about modifiers: it accepts
 modifier is legal where belongs in a linter. Grammars that enforce semantics
 become brittle when the language adds a case.
 
-### 5.7 French source is not supported
+### 5.7 The last 0.3% is deliberately unparsed
+
+Of 11,172 corpus files, 35 still contain ERROR nodes, and most should. 4D's
+own parser auto-closes unbalanced parentheses at end of line, and real files
+rely on it (`If ((a#Null) && (b>=0)` with three opens, two closes; a typo'd
+`orderBy("model.brand asc)"` that never closes the call). Encoding that
+tolerance would mean making `)` optional throughout the grammar — the cure
+is worse than the ERROR node. Also left out: `<!--#4DCODE` template wrappers
+(not method files), pointer member access without a dot (`$ptr->type:=…`, two
+files), multi-word names *starting* with a bare number (`64 bit version`
+untokenized, one file), and a process variable literally named `var` (one
+file).
+
+### 5.8 French source is not supported
 
 `.4dm` files store English. A French install with *Use regional system settings*
 enabled, formulas stored in form JSON, or legacy `.4db` exports may contain
 French. Supporting these means a second keyword table and a second builtin
 table — a substantial addition, not a small one.
 
-### 5.8 `return` inside `Formula()` is not handled
+### 5.9 `return` inside `Formula()` is not handled
 
 4D permits `Formula(return This.ob1.age+10)` — a `return` in expression
 position, with no statement terminator. `jump_statement` requires a
@@ -695,6 +750,44 @@ tree-sitter parse -q --stat 'path/to/project/**/*.4dm'
 Work the highest-frequency error site first. Most grammar work on a language
 this irregular is discovering constructs you did not know existed.
 
+### Corpus campaign results **[corpus]**
+
+The harness was run against 11,172 real `.4dm` files from the `4d` and
+`4d-depot` GitHub organizations. Starting pass rate: 70.4%. After three
+fix-and-recluster rounds: **99.7%** (35 files failing). The method was always
+the same — cluster failures by the source text at the first error, fix the
+largest cluster, rerun. Findings, largest first:
+
+**Constructs the grammar was missing** (each worth 100+ files):
+tokenized namespace types and expressions (`4D:C1709.File`,
+`cs:C1710.MeetingEntity`) and multi-level type paths (`cs.AIKit.Helper`);
+identifiers with leading digits (methods named `00_Start`); untokenized
+multi-word names — plugin commands (`VP SET CELL STYLE(…)`), commands as
+values (`Form event code`), constants (`Is BLOB`, `On Load`) — now a greedy
+adjacent-identifier run, legal because identifier adjacency occurs nowhere
+else; bare table references (`->[CLIENTS:1]`); the `->$out : Type` return form
+on `Function` (not just `#DECLARE`).
+
+**Real-world tolerances the docs don't mention**: lowercase keywords
+(`function`, `case of`) — first letters are now case-insensitive; trailing
+semicolons on statements; comma as a separator in `var` lists and argument
+lists; `var <>ip` and `var ${2}` despite the docs excluding them; comments
+ending in `\` continue onto the next line (commented-out multi-line calls
+depend on this); files opening with one or even two BOMs; Unicode identifiers
+(`Form.ƒ.doValidate()`, `var $ƒ : Object`).
+
+**Language features found only in production code**: assignment as an
+*expression* (`Formula(Form.x.y:=$1)`) — `:=` is now the lowest-precedence
+right-associative operator, and statement assignments are just expression
+statements; bit operators `??` (test), `?+` (set), `?-` (clear), `^`
+(power), `^|` (xor); `For each (…) Until|While (cond)` header guards; ORDA
+marker functions (`Function event restrict`, `query`, `orderBy`) with
+multi-word names (`Function event touched title`); functions *named* `get`
+(`Function get($range : Object)`); `$`-prefixed members
+(`This.Schema.$schema`); `$var` and string keys in object literals;
+`throw(code; message)` with an argument list; bare `&`/`|` conjunction
+arguments in `QUERY`.
+
 Enable `fourd_builtins_sorted()` in debug builds. A mis-sorted table makes the
 binary search miss entries silently, which presents as random builtins failing
 to highlight — an unpleasant thing to debug from symptoms.
@@ -718,6 +811,12 @@ one changed the implementation.
 | Are the parens in `If (…)` statement syntax? | No — the condition is a plain expression; `If ($a) \| ($b)` is legal **[corpus]** | `If`/`While`/`Until`/case labels take a bare `$._expression` (§4.9) |
 | Is every argument an expression? | No — `*`, `>`, `<` marker parameters exist **[corpus]** | `_argument` admits the marker tokens (§2.6) |
 | Is the variadic `...` a named parameter? | No — it is nameless, with optional type; extras are read via `${N}` **[verified]** | `parameter` split into named / variadic shapes; `parameter_indirection` added (§2.10) |
+| Can identifiers start with digits? | Yes — production methods are named `00_Start`; `4D:C1709` is a command token **[corpus]** | Digit-leading branch in identifier/command regexes; no token precedence (§4.10) |
+| Is `:=` a statement or an operator? | An operator — `Formula(Form.x:=$1)` assigns mid-expression **[corpus]** | `assignment` moved into `_expression` at lowest right-assoc precedence |
+| Are keywords case-sensitive? | Not in practice — `function`, `case of` occur in official repos **[corpus]** | First letter of every keyword word is case-insensitive |
+| Do component commands reach the builtin table? | No — `VP …`/`WP …` are project methods of components **[corpus]** | `multiword_name` grammar fallback for adjacent identifiers (§4.2) |
+| Does `For each` take a guard? | Yes — `For each (…) Until\|While (cond)` on the header line **[corpus]** | Optional guard clause after the closing paren |
+| Does line continuation apply inside comments? | Yes — a trailing `\` continues the comment **[corpus]** | `line_comment` token absorbs backslash-newline (§4.7) |
 
 No open questions remain. New ones should be added here rather than resolved
 silently — the tagging convention in this document exists because untracked

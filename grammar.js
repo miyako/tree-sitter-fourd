@@ -7,6 +7,7 @@
 // C ordering: the short-circuit operators sit BELOW their bitwise counterparts,
 // so `$a | $b && $c` groups as `($a | $b) && $c`.
 const PREC = {
+  ASSIGN:    0,   // :=  +=  ...  (usable inside Formula(...) etc.)
   TERNARY:   1,
   LOGIC_OR:  2,   // ||   short-circuit
   LOGIC_AND: 3,   // &&   short-circuit
@@ -26,7 +27,10 @@ const PREC = {
 // `identifier` so `End if` never lexes as two identifiers. Longest-match means
 // `End for each` still beats `End for` without extra bookkeeping.
 function kw(...words) {
-  return token(prec(2, new RegExp(words.join('\\s+'))));
+  // First letter of each word is case-insensitive: hand-edited files contain
+  // `case of` / `end case`, which 4D accepts and its editor normalizes.
+  const ci = w => '[' + w[0].toUpperCase() + w[0].toLowerCase() + ']' + w.slice(1);
+  return token(prec(2, new RegExp(words.map(ci).join('\\s+'))));
 }
 
 module.exports = grammar({
@@ -40,7 +44,7 @@ module.exports = grammar({
   // Longest-match keeps it clear of '\' the integer-division operator, which is
   // never followed by a newline.
   extras: $ => [
-    /[ \t\r\n]/,
+    /[ \t\r\n\uFEFF]/,   // include the BOM: real files start with one (or two)
     $.line_continuation,
     $.line_comment,
     $.block_comment,
@@ -107,12 +111,21 @@ module.exports = grammar({
       repeat(field('modifier', $.modifier)),
       choice(
         kw('Class', 'constructor'),
-        seq('Function',
-            optional(field('accessor', choice('get', 'set'))),
-            field('name', $.identifier)),
+        seq(choice('Function', 'function'),   // keyword case is not enforced in the wild
+            // get/set computed-attribute accessors, plus the ORDA markers:
+            // `Function event restrict`, `Function query attr`, `Function orderBy attr`
+            optional(field('accessor', choice('get', 'set', 'event', 'query', 'orderBy'))),
+            // Optional: `Function get($range : Object)` is a function NAMED
+            // get — keyword lexing claims it as accessor, and the name slot
+            // stays empty. Parses fine; consumers read accessor-with-no-name.
+            optional(field('name', choice($.identifier, $.multiword_name)))),
       ),
       optional($.parameter_list),
-      optional(seq(':', field('return_type', $._type))),
+      // Same two return forms as #DECLARE: `-> $out : Type` or `: Type`.
+      optional(choice(
+        seq('->', field('return', $.parameter)),
+        seq(':', field('return_type', $._type)),
+      )),
       $._terminator,
       field('body', repeat($._statement)),
     ),
@@ -146,7 +159,6 @@ module.exports = grammar({
     // ------------------------------------------------------------ statements
 
     _statement: $ => choice(
-      $.assignment,
       $.var_declaration,
       $.if_statement,
       $.case_statement,
@@ -161,20 +173,31 @@ module.exports = grammar({
       $.expression_statement,
     ),
 
-    assignment: $ => seq(
+    // An EXPRESSION, not a statement: `Formula(Form.x.y:=$1)` assigns inside
+    // an argument list. Statement-position assignments come out as
+    // expression_statement(assignment). Lowest precedence, right-assoc.
+    assignment: $ => prec.right(PREC.ASSIGN, seq(
       field('left', $._expression),
       field('operator', choice(':=', '+=', '-=', '*=', '/=')),
       field('right', $._expression),
-      $._terminator,
-    ),
+    )),
 
+    // Names are plain tokens, not expressions — required now that ':=' is an
+    // expression operator, and truer to the docs (no interprocess/array vars).
+    // Real code separates names with ',' as well as ';'.
     var_declaration: $ => seq(
       'var',
-      field('name', $._expression),
-      repeat(seq(';', field('name', $._expression))),
+      field('name', $._var_name),
+      repeat(seq(choice(';', ','), field('name', $._var_name))),
       optional(seq(':', field('type', $._type))),
       optional(seq(':=', field('value', $._expression))),
       $._terminator,
+    ),
+
+    _var_name: $ => choice(
+      $.local_variable, $.identifier,
+      $.interprocess_variable,        // docs exclude it; the corpus does not
+      $.parameter_indirection,        // `var ${2}` — legacy positional params
     ),
 
     // 21 R4 keywords are lowercase, which keeps them clear of the Capitalized /
@@ -184,7 +207,7 @@ module.exports = grammar({
         seq('return', optional($._expression)),
         'break',
         'continue',
-        seq('throw', optional(seq('(', optional($._expression), ')'))),
+        seq('throw', optional(seq('(', optional($._argument_list), ')'))),
         seq('defer', '(', $._expression, ')'),
       ),
       $._terminator,
@@ -262,7 +285,9 @@ module.exports = grammar({
         field('item', $._expression), ';',
         field('collection', $._expression),
         repeat(seq(';', $._expression)),
-      ')', $._terminator,
+      ')',
+      optional(seq(choice('Until', 'While'), field('guard', $._expression))),
+      $._terminator,
       repeat($._statement),
       kw('End', 'for', 'each'), $._terminator,
     ),
@@ -280,11 +305,14 @@ module.exports = grammar({
       kw('End', 'SQL'), $._terminator,
     ),
 
-    expression_statement: $ => seq($._expression, $._terminator),
+    // Real code carries JS-habit trailing semicolons (`$b.analyse();`);
+    // 4D tolerates them, so we do.
+    expression_statement: $ => seq($._expression, optional(';'), $._terminator),
 
     // ----------------------------------------------------------- expressions
 
     _expression: $ => choice(
+      $.assignment,
       $.binary_expression,
       $.unary_expression,
       $.ternary_expression,
@@ -299,16 +327,18 @@ module.exports = grammar({
         // the lexer's longest-match rule is what keeps them distinct.
         [PREC.LOGIC_OR,  '||'],
         [PREC.LOGIC_AND, '&&'],
-        [PREC.OR,       '|'],
+        [PREC.OR,       choice('|', '^|')],
         [PREC.AND,      '&'],
         [PREC.EQUALITY, choice('=', '#')],
         [PREC.RELATION, choice('<', '>', '<=', '>=')],
-        [PREC.SHIFT,    choice('<<', '>>')],
+        // '??' bit test, '?+' bit set, '?-' bit clear. Longest-match keeps
+        // them clear of ternary '?', which in practice is followed by a space.
+        [PREC.SHIFT,    choice('<<', '>>', '??', '?+', '?-')],
         [PREC.ADDITIVE, choice('+', '-')],
         // '\\' is integer division. It is also the line-continuation marker;
         // the scanner tells them apart by whether anything but whitespace
         // follows to end of line.
-        [PREC.MULTIPLY, choice('*', '/', '%', '\\')],
+        [PREC.MULTIPLY, choice('*', '/', '%', '\\', '^')],
       ];
       return choice(...table.map(([p, op]) => prec.left(p, seq(
         field('left', $._expression),
@@ -334,20 +364,20 @@ module.exports = grammar({
 
     postfix_expression: $ => prec.left(PREC.POSTFIX, choice(
       seq($._expression, '->'),                                        // deref
-      seq($._expression, '.', field('member', $.identifier)),
+      seq($._expression, '.', field('member', choice($.identifier, $.local_variable))),
       seq($._expression, '(', optional($._argument_list), ')'),
       seq($._expression, '[', $._expression, ']'),                     // collection index
       seq($._expression, '{', $._expression, '}'),                     // legacy array element
       seq($._expression, $.char_ref_open, $._expression, $.char_ref_close),
     )),
 
-    _argument_list: $ => seq($._argument, repeat(seq(';', $._argument))),
+    _argument_list: $ => seq($._argument, repeat(seq(choice(';', ','), $._argument))),
 
     // Commands accept marker parameters that are not expressions: the
     // trailing '*' (e.g. `Lowercase($c; *)`) and the '>' / '<' sort/locking
     // markers (`ORDER BY([T]; [T]F; >)`). '>' and '<' cannot begin an
     // expression, so this stays LR(1)-clean.
-    _argument: $ => choice($._expression, '*', '>', '<'),
+    _argument: $ => choice($._expression, '*', '>', '<', '&', '|'),
 
     _primary: $ => choice(
       // Tokenized forms — regex, no scanner involvement.
@@ -358,10 +388,12 @@ module.exports = grammar({
       // and the scanner's builtin table is dead code.
       $.command_name,
       $.constant_name,
+      $.multiword_name,
       // Reserved and unshadowable, so they win over `identifier` outright.
       // Table-driven rather than a keyword list because some are multi-word.
       $.system_variable,
       $.field_reference,
+      $.table_reference,
       $.collection_literal,
       $.object_literal,
       $.string,
@@ -375,18 +407,35 @@ module.exports = grammar({
       seq('(', $._expression, ')'),
     ),
 
+    // Untokenized multi-word command/constant/plugin-command names:
+    // `WP UpdateWidget(...)`, `Form event code`, `Is BLOB`. Adjacent
+    // identifiers are illegal everywhere else in the expression grammar, so a
+    // greedy identifier run is unambiguous. The real scanner's command_name /
+    // constant_name tokens still win where its builtin table matches.
+    // Later words may be bare numbers (`TEST Sign Fake 2`); the first must be
+    // an identifier so this can never start where a number literal belongs.
+    multiword_name: $ => prec.right(seq($.identifier, repeat1(choice($.identifier, $.number)))),
+
     // Tokenized source. These two rules absorb ~1300 commands and several
     // thousand constants, every embedded space, and the French/English split —
     // builtins are always stored in English with a :C or :K suffix.
-    command:  $ => token(/[A-Za-z_][A-Za-z0-9_ ]*:C\d+/),
-    constant: $ => token(/[A-Za-z_][A-Za-z0-9_ ]*:K\d+:\d+/),
+    // Leading digits are legal in the wild: methods named `00_Start`, and the
+    // tokenized namespace `4D:C1709`. Number wins ties via token prec, so
+    // `123` stays a number while `00_Start` and `4D` lex as identifiers.
+    command:  $ => token(new RegExp('[A-Za-z0-9_\u00C0-\uFEFE\uFF00-\uFFFF][A-Za-z0-9_\u00C0-\uFEFE\uFF00-\uFFFF ]*:C[0-9]+')),
+    constant: $ => token(new RegExp('[A-Za-z0-9_\u00C0-\uFEFE\uFF00-\uFFFF][A-Za-z0-9_\u00C0-\uFEFE\uFF00-\uFFFF ]*:K[0-9]+:[0-9]+')),
 
     // [Employees:1]Name:2 — the :N suffixes are also what distinguish a table
     // reference from a collection literal at expression start.
     field_reference: $ => token(seq(
-      '[', /[A-Za-z_][A-Za-z0-9_ ]*/, optional(/:\d+/), ']',
-      /[A-Za-z_][A-Za-z0-9_ ]*/, optional(/:\d+/),
+      '[', /[A-Za-z_0-9][A-Za-z0-9_ ]*/, optional(/:\d+/), ']',
+      /[A-Za-z_0-9][A-Za-z0-9_ ]*/, optional(/:\d+/),
     )),
+
+    // `[CLIENTS:1]` with no trailing field — pointer targets etc. The :N
+    // suffix is what lexically separates it from a collection literal;
+    // field_reference still wins by longest match when a field follows.
+    table_reference: $ => token(seq('[', /[A-Za-z_0-9][A-Za-z0-9_ ]*/, /:\d+/, ']')),
 
     collection_literal: $ => seq('[', optional($._argument_list), ']'),
 
@@ -398,29 +447,50 @@ module.exports = grammar({
     // Property names are UNQUOTED in literal syntax — `{a: 1}`, not `{"a": 1}`
     // — and pairs are separated by ';', not ','. The notation resembles JSON
     // but is not JSON.
-    object_pair: $ => seq(field('key', $.identifier), ':', field('value', $._expression)),
+    object_pair: $ => seq(
+      field('key', choice($.identifier, $.local_variable, $.string)),
+      ':', field('value', $._expression),
+    ),
 
     // ${N} parameter indirection: the index is a full expression (`${$i}`).
     // '${' is one token, so it cannot collide with local_variable — that
     // token requires an alphanumeric after '$' and dies on '{'.
     parameter_indirection: $ => seq('${', field('index', $._expression), '}'),
 
-    local_variable:        $ => token(seq('$', /[A-Za-z0-9_]+/)),
-    interprocess_variable: $ => token(seq('<>', /[A-Za-z_][A-Za-z0-9_]*/)),
-    identifier:            $ => /[A-Za-z_][A-Za-z0-9_]*/,
+    local_variable:        $ => token(seq('$', /[A-Za-z0-9_\u00C0-\uFEFE\uFF00-\uFFFF]+/)),
+    interprocess_variable: $ => token(seq('<>', /[A-Za-z_\u00C0-\uFEFE\uFF00-\uFFFF][A-Za-z0-9_\u00C0-\uFEFE\uFF00-\uFFFF]*/)),
+    // Defined BEFORE identifier: lexical ties (`1e3`, `0xFF` match both at
+    // equal length) resolve by rule order, earlier wins. No token prec here —
+    // tree-sitter checks precedence before match LENGTH, so any prec on
+    // number would make the 2-char `00` beat the 8-char `00_Start`.
+    number: $ => /0[xX][0-9A-Fa-f]+|\d+(\.\d+)?([eE][-+]?\d+)?/,
+    string: $ => token(seq('"', repeat(choice(/[^"\\\n]/, /\\./)), '"')),
+
+    // Digit-leading branch requires a letter after the digits, so a pure
+    // number can never lex as identifier. Unicode letters are legal (`ƒ`);
+    // U+FEFF is carved out of the ranges so a BOM stays an extra.
+    identifier:            $ => new RegExp('([A-Za-z_\u00C0-\uFEFE\uFF00-\uFFFF]|[0-9]+[A-Za-z_\u00C0-\uFEFE\uFF00-\uFFFF])[A-Za-z0-9_\u00C0-\uFEFE\uFF00-\uFFFF]*'),
 
     // Decimal with optional fraction and exponent (range is IEEE double,
     // ±1.7e±308), or 0x/0X hexadecimal — official command docs use
     // 0xFFFFFFFF as a literal. Longest-match keeps 0xFF from splitting into
     // number 0 + identifier xFF. No binary/octal form exists in 4D.
-    number: $ => /0[xX][0-9A-Fa-f]+|\d+(\.\d+)?([eE][-+]?\d+)?/,
-    string: $ => token(seq('"', repeat(choice(/[^"\\\n]/, /\\./)), '"')),
 
-    _type: $ => choice($.identifier, seq('cs', '.', $.identifier), seq('4D', '.', $.identifier)),
+    // A dotted path: `Text`, `cs.MyClass`, `cs.AIKit.OpenAIChatHelper`,
+    // `4D.File`, and the tokenized namespaces `cs:C1710.X` / `4D:C1709.X`
+    // (commands, now that the command token admits a leading digit).
+    // `cs` is an ordinary identifier; bare `4D` is not, hence the literal.
+    _type: $ => prec.right(seq(
+      choice($.identifier, $.command, '4D'),
+      repeat(seq('.', $.identifier)),
+    )),
 
     attributes_header: $ => token(seq('//', /\s*/, '%attributes', /[^\n]*/)),
     line_continuation: $ => token(seq('\\', /[ \t\r]*/, '\n')),
-    line_comment:      $ => token(seq('//', /[^\n]*/)),
+    // A '\' at end of a comment line continues the COMMENT onto the next
+    // line — commented-out multi-line calls rely on this (their continuation
+    // lines are not separately commented).
+    line_comment:      $ => token(seq('//', /([^\n]*\\[ \t\r]*\n)*[^\n]*/)),
     block_comment:     $ => token(seq('/*', /[^*]*\*+([^/*][^*]*\*+)*/, '/')),
   },
 });
