@@ -26,6 +26,7 @@ enum TokenType {
   COMMAND_NAME,      // untokenized command, e.g. SET WINDOW TITLE
   CONSTANT_NAME,     // untokenized constant, e.g. Is text
   SYSTEM_VARIABLE,   // reserved: OK, Error, Document, ...
+  ERROR_SENTINEL,    // never valid in a real state — see below
 };
 
 static inline void adv(TSLexer *l)  { l->advance(l, false); }
@@ -83,27 +84,34 @@ static bool scan_time(TSLexer *l) {
   return true;
 }
 
-// !YYYY-MM-DD! / !YYYY/MM/DD! / !!  (null date)
+// Date literal. ISO !YYYY-MM-DD! is the documented standard form, but 4D also
+// accepts two-digit years for compatibility (!12/04/98!) and, under "Use
+// regional system settings", the system's own delimiter — slash or period.
+//
+// There is NO `!!` shorthand: the null date is spelled !00-00-00! and falls out
+// of the general rule with no special case. The Code Editor's "type ! and press
+// Enter" shortcut expands to the full literal, so `!!` never reaches source.
+//
+// Both delimiters must match; !2024-01/21! is not a date.
 static bool scan_date(TSLexer *l) {
   adv(l);                                     // '!'
-  if (l->lookahead == '!') {                  // null date
-    adv(l);
-    l->mark_end(l);
-    l->result_symbol = DATE_LITERAL;
-    return true;
-  }
-  if (!iswdigit(l->lookahead)) return false;
+  int32_t sep = 0;
 
-  int seps = 0;
-  while (l->lookahead && l->lookahead != '!' && l->lookahead != '\n') {
-    if (l->lookahead == '-' || l->lookahead == '/') {
-      if (++seps > 2) return false;
-    } else if (!iswdigit(l->lookahead)) {
-      return false;
+  for (int part = 0; part < 3; part++) {
+    int digits = 0;
+    while (iswdigit(l->lookahead) && digits < 4) { adv(l); digits++; }
+    if (digits == 0) return false;
+
+    if (part < 2) {
+      int32_t c = l->lookahead;
+      if (c != '-' && c != '/' && c != '.') return false;
+      if (sep == 0) sep = c;
+      else if (c != sep) return false;
+      adv(l);
     }
-    adv(l);
   }
-  if (l->lookahead != '!' || seps != 2) return false;
+
+  if (l->lookahead != '!') return false;
   adv(l);
   l->mark_end(l);
   l->result_symbol = DATE_LITERAL;
@@ -214,6 +222,13 @@ bool tree_sitter_fourd_external_scanner_scan(void *payload, TSLexer *l,
                                              const bool *valid_symbols) {
   (void)payload;
 
+  // During error recovery tree-sitter marks EVERY token valid, including tokens
+  // that scan greedily to a terminator. Without this guard a stray '\\' inside
+  // an object literal put the parser in error recovery, SQL_CONTENT was then
+  // "valid", and scan_sql swallowed the rest of the file. The sentinel appears
+  // in no rule, so it is valid only in that recovery state.
+  if (valid_symbols[ERROR_SENTINEL]) return false;
+
   // SQL bodies are raw — bail out before any whitespace handling.
   if (valid_symbols[SQL_CONTENT]) return scan_sql(l);
 
@@ -223,18 +238,7 @@ bool tree_sitter_fourd_external_scanner_scan(void *payload, TSLexer *l,
       skip(l);
       continue;
     }
-    // Line continuation (21 R4). '\' is ALSO integer division, which is exactly
-    // why the test is "nothing but whitespace to end of line" rather than the
-    // mere presence of a backslash. On failure we return false, the lexer
-    // rewinds to the '\', and the grammar sees the operator.
-    if (l->lookahead == '\\') {
-      l->mark_end(l);
-      adv(l);
-      while (is_space(l->lookahead)) adv(l);
-      if (l->lookahead != '\n') return false;   // integer division, not a join
-      adv(l);
-      continue;
-    }
+    // Line continuation is handled by `extras` in grammar.js, not here.
     if (l->lookahead == '\n') {
       if (valid_symbols[TERMINATOR]) {
         adv(l);

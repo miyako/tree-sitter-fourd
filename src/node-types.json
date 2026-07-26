@@ -334,6 +334,10 @@
             "named": false
           },
           {
+            "type": "&&",
+            "named": false
+          },
+          {
             "type": "*",
             "named": false
           },
@@ -383,6 +387,10 @@
           },
           {
             "type": "|",
+            "named": false
+          },
+          {
+            "type": "||",
             "named": false
           }
         ]
@@ -497,6 +505,10 @@
           },
           {
             "type": "case_statement",
+            "named": true
+          },
+          {
+            "type": "declare_statement",
             "named": true
           },
           {
@@ -654,6 +666,10 @@
             "named": true
           },
           {
+            "type": "declare_statement",
+            "named": true
+          },
+          {
             "type": "expression_statement",
             "named": true
           },
@@ -793,6 +809,32 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "declare_statement",
+    "named": true,
+    "fields": {
+      "return": {
+        "multiple": false,
+        "required": false,
+        "types": [
+          {
+            "type": "parameter",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "parameter_list",
           "named": true
         }
       ]
@@ -1136,6 +1178,10 @@
         },
         {
           "type": "date_literal",
+          "named": true
+        },
+        {
+          "type": "declare_statement",
           "named": true
         },
         {
@@ -1627,6 +1673,10 @@
           "named": true
         },
         {
+          "type": "declare_statement",
+          "named": true
+        },
+        {
           "type": "expression_statement",
           "named": true
         },
@@ -1697,6 +1747,10 @@
           },
           {
             "type": "case_statement",
+            "named": true
+          },
+          {
+            "type": "declare_statement",
             "named": true
           },
           {
@@ -1809,6 +1863,10 @@
           },
           {
             "type": "case_statement",
+            "named": true
+          },
+          {
+            "type": "declare_statement",
             "named": true
           },
           {
@@ -1957,6 +2015,10 @@
           },
           {
             "type": "case_statement",
+            "named": true
+          },
+          {
+            "type": "declare_statement",
             "named": true
           },
           {
@@ -2124,10 +2186,6 @@
         "types": [
           {
             "type": "identifier",
-            "named": true
-          },
-          {
-            "type": "string",
             "named": true
           }
         ]
@@ -2635,6 +2693,10 @@
           "named": true
         },
         {
+          "type": "declare_statement",
+          "named": true
+        },
+        {
           "type": "expression_statement",
           "named": true
         },
@@ -2695,6 +2757,10 @@
         },
         {
           "type": "case_statement",
+          "named": true
+        },
+        {
+          "type": "declare_statement",
           "named": true
         },
         {
@@ -3164,6 +3230,10 @@
             "named": true
           },
           {
+            "type": "declare_statement",
+            "named": true
+          },
+          {
             "type": "expression_statement",
             "named": true
           },
@@ -3215,6 +3285,10 @@
           },
           {
             "type": "case_statement",
+            "named": true
+          },
+          {
+            "type": "declare_statement",
             "named": true
           },
           {
@@ -3680,6 +3754,10 @@
           "named": true
         },
         {
+          "type": "declare_statement",
+          "named": true
+        },
+        {
           "type": "expression_statement",
           "named": true
         },
@@ -3727,11 +3805,19 @@
     "named": false
   },
   {
+    "type": "#DECLARE",
+    "named": false
+  },
+  {
     "type": "%",
     "named": false
   },
   {
     "type": "&",
+    "named": false
+  },
+  {
+    "type": "&&",
     "named": false
   },
   {
@@ -3959,6 +4045,10 @@
     "named": true
   },
   {
+    "type": "line_continuation",
+    "named": true
+  },
+  {
     "type": "local",
     "named": false
   },
@@ -4032,6 +4122,10 @@
   },
   {
     "type": "|",
+    "named": false
+  },
+  {
+    "type": "||",
     "named": false
   },
   {

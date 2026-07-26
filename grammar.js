@@ -4,17 +4,21 @@
 // Skeleton: the hard structural decisions are wired, the long tail of
 // statements and types is left as TODO.
 
+// C ordering: the short-circuit operators sit BELOW their bitwise counterparts,
+// so `$a | $b && $c` groups as `($a | $b) && $c`.
 const PREC = {
-  TERNARY:  1,
-  OR:       2,   // |
-  AND:      3,   // &
-  EQUALITY: 4,   // =  #
-  RELATION: 5,   // <  >  <=  >=
-  SHIFT:    6,   // << >>
-  ADDITIVE: 7,   // +  -
-  MULTIPLY: 8,   // *  /  %  \
-  UNARY:    9,   // -  ->  (pointer creation)
-  POSTFIX: 10,   // .member  [i]  {i}  [[i]]  ->  (deref)
+  TERNARY:   1,
+  LOGIC_OR:  2,   // ||   short-circuit
+  LOGIC_AND: 3,   // &&   short-circuit
+  OR:        4,   // |
+  AND:       5,   // &
+  EQUALITY:  6,   // =  #
+  RELATION:  7,   // <  >  <=  >=
+  SHIFT:     8,   // << >>
+  ADDITIVE:  9,   // +  -
+  MULTIPLY: 10,   // *  /  %  backslash (integer division)
+  UNARY:    11,   // -  ->  (pointer creation)
+  POSTFIX:  12,   // .member  [i]  {i}  [[i]]  ->  (deref)
 };
 
 // Multi-word keyword. A plain string literal would demand exactly one space;
@@ -30,7 +34,17 @@ module.exports = grammar({
 
   // The scanner emits _terminator for meaningful newlines; any newline it
   // declines to claim falls through to extras and is discarded.
-  extras: $ => [/[ \t\r\n]/, $.line_comment, $.block_comment],
+  // The line continuation belongs HERE, not in the scanner. The scanner is only
+  // invoked in states where some external token is valid, so a '\' immediately
+  // after '{' was never seen by it. As an extra it is skipped everywhere.
+  // Longest-match keeps it clear of '\' the integer-division operator, which is
+  // never followed by a newline.
+  extras: $ => [
+    /[ \t\r\n]/,
+    $.line_continuation,
+    $.line_comment,
+    $.block_comment,
+  ],
 
   externals: $ => [
     $._terminator,
@@ -43,6 +57,7 @@ module.exports = grammar({
     $.command_name,      // untokenized: SET WINDOW TITLE
     $.constant_name,     // untokenized: Is text
     $.system_variable,   // reserved: OK, Error, Document
+    $._error_sentinel,   // never used in a rule; see scanner.c
   ],
 
   // No declared conflicts. The `Try` ambiguity resolves itself: try_statement
@@ -130,6 +145,7 @@ module.exports = grammar({
       $.for_each_statement,
       $.try_statement,
       $.sql_block,
+      $.declare_statement,
       $.jump_statement,
       $.expression_statement,
     ),
@@ -160,6 +176,15 @@ module.exports = grammar({
         seq('throw', optional(seq('(', optional($._expression), ')'))),
         seq('defer', '(', $._expression, ')'),
       ),
+      $._terminator,
+    ),
+
+    // #DECLARE($p : Text) -> $out : Object
+    // token() so it outlengths '#', which is the not-equal operator.
+    declare_statement: $ => seq(
+      token('#DECLARE'),
+      optional($.parameter_list),
+      optional(seq('->', field('return', $.parameter))),
       $._terminator,
     ),
 
@@ -246,6 +271,10 @@ module.exports = grammar({
 
     binary_expression: $ => {
       const table = [
+        // '||' and '&&' must precede '|' and '&' in no particular order here —
+        // the lexer's longest-match rule is what keeps them distinct.
+        [PREC.LOGIC_OR,  '||'],
+        [PREC.LOGIC_AND, '&&'],
         [PREC.OR,       '|'],
         [PREC.AND,      '&'],
         [PREC.EQUALITY, choice('=', '#')],
@@ -335,7 +364,10 @@ module.exports = grammar({
       optional(seq($.object_pair, repeat(seq(';', $.object_pair)))),
       '}',
     ),
-    object_pair: $ => seq(field('key', choice($.string, $.identifier)), ':', field('value', $._expression)),
+    // Property names are UNQUOTED in literal syntax — `{a: 1}`, not `{"a": 1}`
+    // — and pairs are separated by ';', not ','. The notation resembles JSON
+    // but is not JSON.
+    object_pair: $ => seq(field('key', $.identifier), ':', field('value', $._expression)),
 
     local_variable:        $ => token(seq('$', /[A-Za-z0-9_]+/)),
     interprocess_variable: $ => token(seq('<>', /[A-Za-z_][A-Za-z0-9_]*/)),
@@ -347,6 +379,7 @@ module.exports = grammar({
     _type: $ => choice($.identifier, seq('cs', '.', $.identifier), seq('4D', '.', $.identifier)),
 
     attributes_header: $ => token(seq('//', /\s*/, '%attributes', /[^\n]*/)),
+    line_continuation: $ => token(seq('\\', /[ \t\r]*/, '\n')),
     line_comment:      $ => token(seq('//', /[^\n]*/)),
     block_comment:     $ => token(seq('/*', /[^*]*\*+([^/*][^*]*\*+)*/, '/')),
   },
