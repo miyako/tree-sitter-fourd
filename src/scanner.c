@@ -165,7 +165,8 @@ static bool scan_sql(TSLexer *l) {
 // Scan words greedily, marking the end after every prefix that is a known
 // builtin; the last mark wins. This is what makes `Current date+1` split
 // correctly instead of swallowing `date` into an identifier.
-static bool scan_builtin(TSLexer *l, const bool *valid) {
+static bool scan_builtin_seeded(TSLexer *l, const bool *valid,
+                                const char *seed, int seed_len) {
   char buf[FOURD_MAX_BUILTIN_LEN];
   int len = 0;
   unsigned char best = 0;
@@ -178,12 +179,19 @@ static bool scan_builtin(TSLexer *l, const bool *valid) {
   if (!want) return false;
 
   for (int word = 0; word < FOURD_MAX_BUILTIN_WORDS; word++) {
-    if (!iswalpha(l->lookahead) && l->lookahead != '_') break;
-
-    while ((iswalnum(l->lookahead) || l->lookahead == '_') &&
-           len < (int)sizeof(buf) - 2) {
-      buf[len++] = (char)l->lookahead;
-      adv(l);
+    if (word == 0 && seed_len > 0) {
+      // First word was already consumed by the function-start peek; the
+      // lexer sits just past it, so resume from the seeded text.
+      if (seed_len > (int)sizeof(buf) - 2) return false;
+      memcpy(buf, seed, (size_t)seed_len);
+      len = seed_len;
+    } else {
+      if (!iswalpha(l->lookahead) && l->lookahead != '_') break;
+      while ((iswalnum(l->lookahead) || l->lookahead == '_') &&
+             len < (int)sizeof(buf) - 2) {
+        buf[len++] = (char)l->lookahead;
+        adv(l);
+      }
     }
     buf[len] = '\0';
 
@@ -252,18 +260,26 @@ bool tree_sitter_fourd_external_scanner_scan(void *payload, TSLexer *l,
     break;
   }
 
-  if (l->eof(l)) return false;
+  if (l->eof(l)) {
+    if (valid_symbols[TERMINATOR]) {
+      l->mark_end(l);                 // zero width; statement-start states
+      l->result_symbol = TERMINATOR;  // never have TERMINATOR valid, so this
+      return true;                    // cannot loop
+    }
+    return false;
+  }
 
   // --- zero-width function marker -------------------------------------------
   // Emitted only when a declaration is legal here, which is what stops a
   // process variable named `local` or `server` from being read as a modifier.
   if (valid_symbols[FUNCTION_START]) {
     l->mark_end(l);                              // zero width, whatever we scan
-    char w[32];
+    char w[64];
     for (int i = 0; i < 8; i++) {
-      if (read_word(l, w, sizeof(w)) == 0) return false;
+      int wl = read_word(l, w, sizeof(w));
+      if (wl == 0) return false;
 
-      if (strcmp(w, "Function") == 0) {
+      if (strcmp(w, "Function") == 0 || strcmp(w, "function") == 0) {
         l->result_symbol = FUNCTION_START;
         return true;
       }
@@ -274,7 +290,19 @@ bool tree_sitter_fourd_external_scanner_scan(void *payload, TSLexer *l,
         l->result_symbol = FUNCTION_START;
         return true;
       }
-      if (!is_modifier(w)) return false;
+      if (!is_modifier(w)) {
+        // Not a declaration. If this happened on the FIRST word, the lexer
+        // sits exactly one word in — hand that word to the builtin matcher
+        // so `ALERT ("x")` at statement start still lexes as a command_name.
+        // (After modifiers we cannot fall through: no builtin starts with
+        // one, and the lexer state would not match the buffer.)
+        if (i == 0 &&
+            (valid_symbols[COMMAND_NAME] || valid_symbols[CONSTANT_NAME] ||
+             valid_symbols[SYSTEM_VARIABLE])) {
+          return scan_builtin_seeded(l, valid_symbols, w, wl);
+        }
+        return false;
+      }
       while (is_space(l->lookahead)) adv(l);
     }
     return false;
@@ -309,7 +337,7 @@ bool tree_sitter_fourd_external_scanner_scan(void *payload, TSLexer *l,
   if ((valid_symbols[COMMAND_NAME] || valid_symbols[CONSTANT_NAME] ||
        valid_symbols[SYSTEM_VARIABLE]) &&
       (iswalpha(l->lookahead) || l->lookahead == '_')) {
-    return scan_builtin(l, valid_symbols);
+    return scan_builtin_seeded(l, valid_symbols, NULL, 0);
   }
 
   return false;
