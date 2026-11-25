@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render src/builtins.h from the 4D command/constant dump.
 
-The dump is produced by ``tools/4dproject/Sources/Methods/generate_builtins_dump.4dm``
+The dump is produced by ``tools/Builtins/Project/Sources/Methods/generate_builtins_dump.4dm``
 running under tool4d and looks like::
 
     {
@@ -35,6 +35,7 @@ Usage::
 
     tools/generate_builtins.py --dump builtins.json --write src/builtins.h
     tools/generate_builtins.py --dump builtins.json --build 21R5.100186 --write
+    tools/generate_builtins.py --dump builtins.json --version '21 R5' --build 21R5.100186 --write
     tools/generate_builtins.py --dump builtins.json --check   # CI: exit 1 if stale
 """
 
@@ -102,7 +103,7 @@ def validate_names(names: list[str], namespace: str) -> None:
         seen[folded] = name
 
 
-def load_dump(path: Path, build: str = "") -> tuple[list[str], list[str], str]:
+def load_dump(path: Path, build: str = "", version: str = "") -> tuple[list[str], list[str], str]:
     data = json.loads(path.read_text(encoding="utf-8"))
     for key in ("commands", "constants"):
         if key not in data:
@@ -121,8 +122,10 @@ def load_dump(path: Path, build: str = "") -> tuple[list[str], list[str], str]:
         )
 
     # Application version may already carry "build ..."; the CLI stamp is the
-    # authoritative one and is appended below.
-    label = re.sub(r"\s*build\s+.*$", "", str(data.get("version", "unknown")), flags=re.I)
+    # authoritative one and is appended below. `version` overrides it because
+    # the dump reports what 4D calls the version -- "2140" for 21 R4 -- which is
+    # accurate and unreadable in equal measure.
+    label = version or re.sub(r"\s*build\s+.*$", "", str(data.get("version", "unknown")), flags=re.I)
     build = build or data.get("build", "")
     if build:
         label = f"{label} (build {build})"
@@ -212,13 +215,14 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--dump", required=True, type=Path, help="JSON produced by generate_builtins_dump.4dm")
     parser.add_argument("--header", type=Path, default=Path("src/builtins.h"))
     parser.add_argument("--build", default="", help="exact build stamp, e.g. from tool4d --version")
+    parser.add_argument("--version", default="", help="human version label for the stamp, e.g. '21 R5'; defaults to the one in the dump")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--write", action="store_true", help="rewrite --header in place")
     mode.add_argument("--check", action="store_true", help="exit 3 if --header is out of date")
     args = parser.parse_args(argv)
 
     try:
-        commands, constants, label = load_dump(args.dump, args.build)
+        commands, constants, label = load_dump(args.dump, args.build, args.version)
         before = args.header.read_text(encoding="utf-8")
         after = render(before, commands, constants, label)
     except (OSError, json.JSONDecodeError, DumpError) as exc:

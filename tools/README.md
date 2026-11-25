@@ -70,8 +70,10 @@ python3 tools/generate_builtins.py --dump /tmp/builtins.json --header src/builti
 
 `--build` stamps the build number (`21R4.100186`); the workflow passes the one
 `tool4d --version` reports, which also catches a download that quietly resolved
-to another build. The stamp lands in a `// Source release:` comment, so the
-header always says which release it describes.
+to another build. `--version` stamps the release label, because the dump itself
+reports what 4D's `Application version` returns -- `2140`, for 21 R4. Both land
+in a `// Source release:` comment, so the header always says which release it
+describes.
 
 ## Checking the table
 
