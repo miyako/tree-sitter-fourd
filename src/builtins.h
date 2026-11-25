@@ -1,5 +1,5 @@
 // builtins.h — command AND constant lookup for the 4D external scanner.
-// Source release: tool4d 2140 (build 21R4.100224).
+// Source release: tool4d 21 R4 (build 21R4.100224).
 // Replaces commands.h.
 //
 // GENERATED FILE. Regenerate with tools/generate_builtins.py; the table below
