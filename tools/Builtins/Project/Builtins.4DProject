@@ -1,0 +1,5 @@
+{
+  "$comment": "Throw-away project used by .github/workflows/update-builtins.yml to enumerate 4D commands and constants. Nothing runs here but generate_builtins_dump.",
+  "compatibilityVersion": 2130,
+  "tokenizedText": false
+}
