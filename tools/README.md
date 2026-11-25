@@ -114,7 +114,8 @@ No macOS archive could be found under any spelling (`mac`/`macos`/`osx`,
 
 `generate_command_list.4dm` and `generate_constant_list.4dm` are untouched and
 still work as before: they put the lists on the clipboard for the regex grammar
-helpers. They differ from the CI path on purpose -- they uppercase and strip
+helpers (`command_to_regex.4dm`, with `test_code_generator.4dm` to try one out).
+All four live here next to the grammar they feed. They differ from the CI path on purpose -- they uppercase and strip
 spaces, because `command_to_regex.4dm` wants normalized names, while
 `builtins.h` stores `ARRAY INTEGER` and `Attribute published SQL` verbatim.
 
