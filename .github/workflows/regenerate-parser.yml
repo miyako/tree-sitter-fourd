@@ -243,6 +243,11 @@ jobs:
           git add src/parser.c src/grammar.json src/node-types.json test/corpus
           git commit -m "Regenerate parser from grammar.js"
           git fetch --quiet origin "$BRANCH" || true
+          # This push uses GITHUB_TOKEN, and GitHub does not run workflows for
+          # events that token causes. The pull request opened below therefore
+          # shows no checks -- at most a refused run with zero jobs in the
+          # Actions list, which reads like a failure and is not one. The
+          # verification that matters already ran in this job, above this step.
           git push --force-with-lease origin "$BRANCH"
 
           body=$(mktemp)
