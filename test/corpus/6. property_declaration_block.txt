@@ -1,0 +1,17 @@
+==================
+6. property_declaration_block
+==================
+
+property a : Text
+property a; b : Text
+
+---
+
+(source_file
+  (property_declaration
+    (identifier)
+    (identifier))
+  (property_declaration
+    (identifier)
+    (identifier)
+    (identifier)))

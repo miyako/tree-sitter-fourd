@@ -152,6 +152,25 @@ jobs:
             exit 1
           fi
 
+      - name: Run the grammar's corpus tests
+        id: corpus
+        # test/corpus holds snapshots of the trees this grammar produced when
+        # they were last re-baselined. A grammar change is *supposed* to move
+        # them, so a failure is reported in the pull request instead of
+        # blocking it -- re-baselining here would make the suite assert
+        # whatever the parser happens to do, which is not a test.
+        continue-on-error: true
+        run: |
+          set -uo pipefail
+          output=$(tree-sitter test 2>&1 || true)
+          clean=$(printf '%s\n' "$output" | sed 's/\x1b\[[0-9;]*m//g')
+          passed=$(printf '%s\n' "$clean" | grep -c '✓' || true)
+          failed=$(printf '%s\n' "$clean" | grep -c '✗' || true)
+          echo "corpus: ${passed} passed, ${failed} failing"
+          printf '%s\n' "$clean" | tail -40
+          echo "passed=$passed" >> "$GITHUB_OUTPUT"
+          echo "failed=$failed" >> "$GITHUB_OUTPUT"
+
       - name: Record the shape of the change
         id: shape
         run: |
@@ -201,6 +220,8 @@ jobs:
           COMMITTED_RULES: ${{ steps.shape.outputs.committed_rules }}
           REGENERATED_RULES: ${{ steps.shape.outputs.rules }}
           JS_RULES: ${{ steps.shape.outputs.js_rules }}
+          CORPUS_PASSED: ${{ steps.corpus.outputs.passed }}
+          CORPUS_FAILED: ${{ steps.corpus.outputs.failed }}
           BASE_BRANCH: ${{ github.event.repository.default_branch }}
         run: |
           set -euo pipefail
@@ -228,6 +249,7 @@ jobs:
             echo "| rules in src/grammar.json (committed) | $COMMITTED_RULES |"
             echo "| rules in src/grammar.json (regenerated) | $REGENERATED_RULES |"
             echo "| rules in grammar.js | $JS_RULES |"
+            echo "| corpus tests (test/corpus) | ${CORPUS_PASSED:-?} passed, ${CORPUS_FAILED:-?} failing |"
             echo
             echo 'A committed count that disagrees with `grammar.js` means the artefacts in the tree'
             echo 'were generated from a grammar.js that is no longer there -- the drift this workflow'

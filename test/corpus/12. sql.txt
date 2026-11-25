@@ -1,0 +1,18 @@
+==================
+12. sql
+==================
+
+Begin SQL
+
+INSERT INTO SALESREPS (NAME, AGE) VALUES (‘Henry’,40);
+INSERT INTO SALESREPS (NAME, AGE) VALUES (‘Bill’,35)
+	
+End SQL
+
+---
+
+(source_file
+  (sql_block
+    (keyword)
+    (sql_content)
+    (keyword)))

@@ -1,0 +1,96 @@
+==================
+8. assignment_block
+==================
+
+$0:=$value.prop
+
+$variable:=$value.prop
+$variable.prop:=$value
+$variable.prop:=$value.prop
+$1:=$value
+$1.prop:=$value
+
+$0:=$value.prop
+$1.prop:=$value.prop
+$variable:=!00-00-00!
+$variable:=!2001-01-01!
+$variable:="abc\r\n\t\"\\"+$value
+$1.prop:=$value ? "a" : "b"
+
+
+---
+
+(source_file
+  (expression_statement
+    (assignment
+      (local_variable)
+      (postfix_expression
+        (local_variable)
+        (identifier))))
+  (expression_statement
+    (assignment
+      (local_variable)
+      (postfix_expression
+        (local_variable)
+        (identifier))))
+  (expression_statement
+    (assignment
+      (postfix_expression
+        (local_variable)
+        (identifier))
+      (local_variable)))
+  (expression_statement
+    (assignment
+      (postfix_expression
+        (local_variable)
+        (identifier))
+      (postfix_expression
+        (local_variable)
+        (identifier))))
+  (expression_statement
+    (assignment
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (assignment
+      (postfix_expression
+        (local_variable)
+        (identifier))
+      (local_variable)))
+  (expression_statement
+    (assignment
+      (local_variable)
+      (postfix_expression
+        (local_variable)
+        (identifier))))
+  (expression_statement
+    (assignment
+      (postfix_expression
+        (local_variable)
+        (identifier))
+      (postfix_expression
+        (local_variable)
+        (identifier))))
+  (expression_statement
+    (assignment
+      (local_variable)
+      (date_literal)))
+  (expression_statement
+    (assignment
+      (local_variable)
+      (date_literal)))
+  (expression_statement
+    (assignment
+      (local_variable)
+      (binary_expression
+        (string)
+        (local_variable))))
+  (expression_statement
+    (assignment
+      (postfix_expression
+        (local_variable)
+        (identifier))
+      (ternary_expression
+        (local_variable)
+        (string)
+        (string)))))

@@ -163,7 +163,9 @@ then:
    template, which is not this workflow's business;
 2. compiles `src/parser.c` and `src/scanner.c` (`cc -fsyntax-only`);
 3. parses `test/smoke.4dm` and fails if any `ERROR` or `MISSING` node appears;
-4. opens or updates the `ci/regenerate-parser` pull request, quoting the
+4. runs `tree-sitter test` over `test/corpus`, and reports the pass/fail count in
+   the pull request rather than failing on it;
+5. opens or updates the `ci/regenerate-parser` pull request, quoting the
    `STATE_COUNT`, `SYMBOL_COUNT`, `TOKEN_COUNT` and rule-count changes.
 
 It deliberately does not block pull requests. A stale tree is a fact to surface
@@ -173,6 +175,15 @@ with a diff, not a red cross on unrelated work.
 `grammar.js`: it exercises the constructs that depend on the external scanner --
 multi-word commands and constants, `_o_…` style constants -- plus `#DECLARE`,
 `Case of`, `Begin SQL` and `Try`.
+
+`test/corpus/*.txt` are the fifteen fixtures that came with this grammar's
+predecessor, covering function, class, property, alias, SQL, collection and
+`Try` blocks. Their expected trees described a grammar that no longer exists --
+nothing had ever run them -- so they were re-baselined once, and a failing entry
+now means the grammar's output shape changed. That is a signal to read the diff,
+not to run `-u`: re-baselining blindly makes the suite assert whatever the parser
+happens to do. Both the corpus and `smoke.4dm` would have caught
+`class extends 4D.Entity` parsing as an error, which is how it was found.
 
 ## Before merging a regeneration
 

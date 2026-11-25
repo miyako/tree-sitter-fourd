@@ -1,0 +1,31 @@
+==================
+4. class_extends
+==================
+
+class extends aClass
+class extends 4D.Entity
+class extends cs.aClass
+class extends cs.aComponent.aClass
+
+---
+
+(source_file
+  (extends_clause
+    (keyword)
+    (class_name
+      (identifier)))
+  (extends_clause
+    (keyword)
+    (class_name
+      (identifier)))
+  (extends_clause
+    (keyword)
+    (class_name
+      (identifier)
+      (identifier)))
+  (extends_clause
+    (keyword)
+    (class_name
+      (identifier)
+      (identifier)
+      (identifier))))

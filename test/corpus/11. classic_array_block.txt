@@ -1,0 +1,320 @@
+==================
+11. classic_array_block
+==================
+
+ARRAY LONGINT($a; 0)
+ARRAY LONGINT($a; 0; 0)
+ARRAY BLOB($a; 0)
+ARRAY BLOB($a; 0; 0)
+ARRAY BOOLEAN($a; 0)
+ARRAY BOOLEAN($a; 0; 0)
+ARRAY DATE($a; 0)
+ARRAY DATE($a; 0; 0)
+ARRAY INTEGER($a; 0)
+ARRAY INTEGER($a; 0; 0)
+ARRAY LONGINT($a; 0)
+ARRAY LONGINT($a; 0; 0)
+ARRAY OBJECT($a; 0)
+ARRAY OBJECT($a; 0; 0)
+ARRAY PICTURE($a; 0)
+ARRAY PICTURE($a; 0; 0)
+ARRAY POINTER($a; 0)
+ARRAY POINTER($a; 0; 0)
+ARRAY REAL($a; 0)
+ARRAY REAL($a; 0; 0)
+ARRAY TEXT($a; 0)
+ARRAY TEXT($a; 0; 0)
+ARRAY TIME($a; 0)
+ARRAY TIME($a; 0; 0)
+ARRAY LONGINT:C221($a; 0)
+ARRAY LONGINT:C221($a; 0; 0)
+ARRAY BLOB:C1222($a; 0)
+ARRAY BLOB:C1222($a; 0; 0)
+ARRAY BOOLEAN:C223($a; 0)
+ARRAY BOOLEAN:C223($a; 0; 0)
+ARRAY DATE:C224($a; 0)
+ARRAY DATE:C224($a; 0; 0)
+ARRAY INTEGER:C220($a; 0)
+ARRAY INTEGER:C220($a; 0; 0)
+ARRAY LONGINT:C221($a; 0)
+ARRAY LONGINT:C221($a; 0; 0)
+ARRAY OBJECT:C1221($a; 0)
+ARRAY OBJECT:C1221($a; 0; 0)
+ARRAY PICTURE:C279($a; 0)
+ARRAY PICTURE:C279($a; 0; 0)
+ARRAY POINTER:C280($a; 0)
+ARRAY POINTER:C280($a; 0; 0)
+ARRAY REAL:C219($a; 0)
+ARRAY REAL:C219($a; 0; 0)
+ARRAY TEXT:C222($a; 0)
+ARRAY TEXT:C222($a; 0; 0)
+ARRAY TIME:C1223($a; 0)
+ARRAY TIME:C1223($a; 0; 0)
+
+---
+
+(source_file
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command_name)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (number)
+      (number))))

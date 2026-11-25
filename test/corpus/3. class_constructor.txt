@@ -1,0 +1,15 @@
+==================
+3. class_constructor
+==================
+
+singleton shared class constructor
+
+---
+
+(source_file
+  (expression_statement
+    (multiword_name
+      (identifier)
+      (identifier)
+      (identifier)
+      (identifier))))
