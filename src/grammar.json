@@ -49,26 +49,69 @@
         }
       ]
     },
+    "class_name": {
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "SEQ",
+        "members": [
+          {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "identifier"
+              },
+              {
+                "type": "STRING",
+                "value": "4D"
+              }
+            ]
+          },
+          {
+            "type": "REPEAT",
+            "content": {
+              "type": "SEQ",
+              "members": [
+                {
+                  "type": "STRING",
+                  "value": "."
+                },
+                {
+                  "type": "SYMBOL",
+                  "name": "identifier"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
     "extends_clause": {
       "type": "SEQ",
       "members": [
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Cc]lass\\s+[Ee]xtends"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Cc]lass\\s+[Ee]xtends"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "FIELD",
           "name": "super",
           "content": {
             "type": "SYMBOL",
-            "name": "identifier"
+            "name": "class_name"
           }
         },
         {
@@ -190,15 +233,20 @@
           "type": "CHOICE",
           "members": [
             {
-              "type": "TOKEN",
+              "type": "ALIAS",
               "content": {
-                "type": "PREC",
-                "value": 2,
+                "type": "TOKEN",
                 "content": {
-                  "type": "PATTERN",
-                  "value": "[Cc]lass\\s+[Cc]onstructor"
+                  "type": "PREC",
+                  "value": 2,
+                  "content": {
+                    "type": "PATTERN",
+                    "value": "[Cc]lass\\s+[Cc]onstructor"
+                  }
                 }
-              }
+              },
+              "named": true,
+              "value": "keyword"
             },
             {
               "type": "SEQ",
@@ -564,6 +612,10 @@
         {
           "type": "SYMBOL",
           "name": "try_statement"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "use_statement"
         },
         {
           "type": "SYMBOL",
@@ -1002,15 +1054,20 @@
           ]
         },
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Ee]nd\\s+[Ii]f"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Ee]nd\\s+[Ii]f"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "SYMBOL",
@@ -1022,15 +1079,20 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Cc]ase\\s+[Oo]f"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Cc]ase\\s+[Oo]f"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "SYMBOL",
@@ -1076,15 +1138,20 @@
           ]
         },
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Ee]nd\\s+[Cc]ase"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Ee]nd\\s+[Cc]ase"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "SYMBOL",
@@ -1151,15 +1218,20 @@
           }
         },
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Ee]nd\\s+[Ww]hile"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Ee]nd\\s+[Ww]hile"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "SYMBOL",
@@ -1287,15 +1359,20 @@
           }
         },
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Ee]nd\\s+[Ff]or"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Ee]nd\\s+[Ff]or"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "SYMBOL",
@@ -1307,15 +1384,20 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Ff]or\\s+[Ee]ach"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Ff]or\\s+[Ee]ach"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "STRING",
@@ -1407,15 +1489,68 @@
           }
         },
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Ee]nd\\s+[Ff]or\\s+[Ee]ach"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Ee]nd\\s+[Ff]or\\s+[Ee]ach"
+              }
             }
+          },
+          "named": true,
+          "value": "keyword"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_terminator"
+        }
+      ]
+    },
+    "use_statement": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "Use"
+        },
+        {
+          "type": "FIELD",
+          "name": "object",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_expression"
           }
+        },
+        {
+          "type": "SYMBOL",
+          "name": "_terminator"
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_statement"
+          }
+        },
+        {
+          "type": "ALIAS",
+          "content": {
+            "type": "TOKEN",
+            "content": {
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Ee]nd\\s+[Uu]se"
+              }
+            }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "SYMBOL",
@@ -1478,15 +1613,20 @@
           ]
         },
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Ee]nd\\s+[Tt]ry"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Ee]nd\\s+[Tt]ry"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "SYMBOL",
@@ -1498,15 +1638,20 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Bb]egin\\s+[Ss]QL"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Bb]egin\\s+[Ss]QL"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "SYMBOL",
@@ -1529,15 +1674,20 @@
           }
         },
         {
-          "type": "TOKEN",
+          "type": "ALIAS",
           "content": {
-            "type": "PREC",
-            "value": 2,
+            "type": "TOKEN",
             "content": {
-              "type": "PATTERN",
-              "value": "[Ee]nd\\s+[Ss]QL"
+              "type": "PREC",
+              "value": 2,
+              "content": {
+                "type": "PATTERN",
+                "value": "[Ee]nd\\s+[Ss]QL"
+              }
             }
-          }
+          },
+          "named": true,
+          "value": "keyword"
         },
         {
           "type": "SYMBOL",

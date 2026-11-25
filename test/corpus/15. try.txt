@@ -1,0 +1,50 @@
+==================
+15. try
+==================
+
+Try(ALERT:C41("alert"))
+
+Try
+	
+	ALERT:C41("alert")
+	
+End try
+
+Try
+	
+	ALERT:C41("alert")
+	Try
+		
+		ALERT:C41("alert")
+		
+	End try
+Catch
+	
+End try
+
+---
+
+(source_file
+  (expression_statement
+    (try_expression
+      (postfix_expression
+        (command)
+        (string))))
+  (try_statement
+    (expression_statement
+      (postfix_expression
+        (command)
+        (string)))
+    (keyword))
+  (try_statement
+    (expression_statement
+      (postfix_expression
+        (command)
+        (string)))
+    (try_statement
+      (expression_statement
+        (postfix_expression
+          (command)
+          (string)))
+      (keyword))
+    (keyword)))

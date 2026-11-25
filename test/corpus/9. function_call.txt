@@ -1,0 +1,66 @@
+==================
+9. function_call
+==================
+
+$ANSI.push($ccccvc)
+$value.method()
+4D.File.method()
+cs.aClass.method()
+cs.aComponent.aClass.method()
+cs.aComponent.aClass.method() + cs.aComponent.aClass.method()
+
+---
+
+(source_file
+  (expression_statement
+    (postfix_expression
+      (postfix_expression
+        (local_variable)
+        (identifier))
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (postfix_expression
+        (local_variable)
+        (identifier))))
+  (expression_statement
+    (postfix_expression
+      (postfix_expression
+        (postfix_expression
+          (identifier)
+          (identifier))
+        (identifier))))
+  (expression_statement
+    (postfix_expression
+      (postfix_expression
+        (postfix_expression
+          (identifier)
+          (identifier))
+        (identifier))))
+  (expression_statement
+    (postfix_expression
+      (postfix_expression
+        (postfix_expression
+          (postfix_expression
+            (identifier)
+            (identifier))
+          (identifier))
+        (identifier))))
+  (expression_statement
+    (binary_expression
+      (postfix_expression
+        (postfix_expression
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (identifier))
+            (identifier))
+          (identifier)))
+      (postfix_expression
+        (postfix_expression
+          (postfix_expression
+            (postfix_expression
+              (identifier)
+              (identifier))
+            (identifier))
+          (identifier))))))

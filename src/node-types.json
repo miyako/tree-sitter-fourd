@@ -624,6 +624,10 @@
             "named": true
           },
           {
+            "type": "use_statement",
+            "named": true
+          },
+          {
             "type": "var_declaration",
             "named": true
           },
@@ -794,6 +798,10 @@
             "named": true
           },
           {
+            "type": "use_statement",
+            "named": true
+          },
+          {
             "type": "var_declaration",
             "named": true
           },
@@ -806,10 +814,29 @@
     },
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "case_branch",
+          "named": true
+        },
+        {
+          "type": "keyword",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "class_name",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "identifier",
           "named": true
         }
       ]
@@ -1086,11 +1113,21 @@
         "required": true,
         "types": [
           {
-            "type": "identifier",
+            "type": "class_name",
             "named": true
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "keyword",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -1430,7 +1467,7 @@
     },
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "assignment",
@@ -1505,6 +1542,10 @@
           "named": true
         },
         {
+          "type": "keyword",
+          "named": true
+        },
+        {
           "type": "local_variable",
           "named": true
         },
@@ -1566,6 +1607,10 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        },
+        {
+          "type": "use_statement",
           "named": true
         },
         {
@@ -2026,7 +2071,7 @@
     },
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "case_statement",
@@ -2057,6 +2102,10 @@
           "named": true
         },
         {
+          "type": "keyword",
+          "named": true
+        },
+        {
           "type": "repeat_statement",
           "named": true
         },
@@ -2066,6 +2115,10 @@
         },
         {
           "type": "try_statement",
+          "named": true
+        },
+        {
+          "type": "use_statement",
           "named": true
         },
         {
@@ -2154,6 +2207,10 @@
             "named": true
           },
           {
+            "type": "use_statement",
+            "named": true
+          },
+          {
             "type": "var_declaration",
             "named": true
           },
@@ -2221,9 +2278,13 @@
       }
     },
     "children": {
-      "multiple": false,
+      "multiple": true,
       "required": false,
       "types": [
+        {
+          "type": "keyword",
+          "named": true
+        },
         {
           "type": "parameter_list",
           "named": true
@@ -2277,6 +2338,10 @@
           },
           {
             "type": "try_statement",
+            "named": true
+          },
+          {
+            "type": "use_statement",
             "named": true
           },
           {
@@ -2444,6 +2509,10 @@
             "named": true
           },
           {
+            "type": "use_statement",
+            "named": true
+          },
+          {
             "type": "var_declaration",
             "named": true
           },
@@ -2453,6 +2522,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "keyword",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -3342,6 +3421,10 @@
           "named": true
         },
         {
+          "type": "use_statement",
+          "named": true
+        },
+        {
           "type": "var_declaration",
           "named": true
         },
@@ -3417,6 +3500,10 @@
           "named": true
         },
         {
+          "type": "use_statement",
+          "named": true
+        },
+        {
           "type": "var_declaration",
           "named": true
         },
@@ -3441,6 +3528,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "keyword",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -3935,6 +4032,10 @@
             "named": true
           },
           {
+            "type": "use_statement",
+            "named": true
+          },
+          {
             "type": "var_declaration",
             "named": true
           },
@@ -3989,6 +4090,10 @@
             "named": true
           },
           {
+            "type": "use_statement",
+            "named": true
+          },
+          {
             "type": "var_declaration",
             "named": true
           },
@@ -3998,6 +4103,16 @@
           }
         ]
       }
+    },
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "keyword",
+          "named": true
+        }
+      ]
     }
   },
   {
@@ -4102,6 +4217,184 @@
         },
         {
           "type": "unary_expression",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "use_statement",
+    "named": true,
+    "fields": {
+      "object": {
+        "multiple": true,
+        "required": true,
+        "types": [
+          {
+            "type": "(",
+            "named": false
+          },
+          {
+            "type": ")",
+            "named": false
+          },
+          {
+            "type": "assignment",
+            "named": true
+          },
+          {
+            "type": "binary_expression",
+            "named": true
+          },
+          {
+            "type": "collection_literal",
+            "named": true
+          },
+          {
+            "type": "command",
+            "named": true
+          },
+          {
+            "type": "command_name",
+            "named": true
+          },
+          {
+            "type": "constant",
+            "named": true
+          },
+          {
+            "type": "constant_name",
+            "named": true
+          },
+          {
+            "type": "date_literal",
+            "named": true
+          },
+          {
+            "type": "field_reference",
+            "named": true
+          },
+          {
+            "type": "identifier",
+            "named": true
+          },
+          {
+            "type": "interprocess_variable",
+            "named": true
+          },
+          {
+            "type": "local_variable",
+            "named": true
+          },
+          {
+            "type": "multiword_name",
+            "named": true
+          },
+          {
+            "type": "number",
+            "named": true
+          },
+          {
+            "type": "object_literal",
+            "named": true
+          },
+          {
+            "type": "parameter_indirection",
+            "named": true
+          },
+          {
+            "type": "postfix_expression",
+            "named": true
+          },
+          {
+            "type": "string",
+            "named": true
+          },
+          {
+            "type": "system_variable",
+            "named": true
+          },
+          {
+            "type": "table_reference",
+            "named": true
+          },
+          {
+            "type": "ternary_expression",
+            "named": true
+          },
+          {
+            "type": "time_literal",
+            "named": true
+          },
+          {
+            "type": "try_expression",
+            "named": true
+          },
+          {
+            "type": "unary_expression",
+            "named": true
+          }
+        ]
+      }
+    },
+    "children": {
+      "multiple": true,
+      "required": true,
+      "types": [
+        {
+          "type": "case_statement",
+          "named": true
+        },
+        {
+          "type": "declare_statement",
+          "named": true
+        },
+        {
+          "type": "expression_statement",
+          "named": true
+        },
+        {
+          "type": "for_each_statement",
+          "named": true
+        },
+        {
+          "type": "for_statement",
+          "named": true
+        },
+        {
+          "type": "if_statement",
+          "named": true
+        },
+        {
+          "type": "jump_statement",
+          "named": true
+        },
+        {
+          "type": "keyword",
+          "named": true
+        },
+        {
+          "type": "repeat_statement",
+          "named": true
+        },
+        {
+          "type": "sql_block",
+          "named": true
+        },
+        {
+          "type": "try_statement",
+          "named": true
+        },
+        {
+          "type": "use_statement",
+          "named": true
+        },
+        {
+          "type": "var_declaration",
+          "named": true
+        },
+        {
+          "type": "while_statement",
           "named": true
         }
       ]
@@ -4384,7 +4677,7 @@
     },
     "children": {
       "multiple": true,
-      "required": false,
+      "required": true,
       "types": [
         {
           "type": "case_statement",
@@ -4415,6 +4708,10 @@
           "named": true
         },
         {
+          "type": "keyword",
+          "named": true
+        },
+        {
           "type": "repeat_statement",
           "named": true
         },
@@ -4424,6 +4721,10 @@
         },
         {
           "type": "try_statement",
+          "named": true
+        },
+        {
+          "type": "use_statement",
           "named": true
         },
         {
@@ -4610,6 +4911,10 @@
     "named": false
   },
   {
+    "type": "Use",
+    "named": false
+  },
+  {
     "type": "While",
     "named": false
   },
@@ -4707,6 +5012,10 @@
   },
   {
     "type": "interprocess_variable",
+    "named": true
+  },
+  {
+    "type": "keyword",
     "named": true
   },
   {

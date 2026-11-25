@@ -1,0 +1,176 @@
+==================
+10. classic_compiler_block
+==================
+
+C_BLOB($a; $b; $c)
+C_BOOLEAN($a; $b; $c)
+C_COLLECTION($a; $b; $c)
+C_DATE($a; $b; $c)
+C_LONGINT($a; $b; $c)
+C_OBJECT($a; $b; $c)
+C_PICTURE($a; $b; $c)
+C_POINTER($a; $b; $c)
+C_REAL($a; $b; $c)
+C_TEXT($a; $b; $c)
+C_TIME($a; $b; $c)
+C_VARIANT($a; $b; $c)
+C_BLOB:C604($a; $b; $c)
+C_BOOLEAN:C305($a; $b; $c)
+C_COLLECTION:C1488($a; $b; $c)
+C_DATE:C307($a; $b; $c)
+C_LONGINT:C283($a; $b; $c)
+C_OBJECT:C1216($a; $b; $c)
+C_PICTURE:C286($a; $b; $c)
+C_POINTER:C301($a; $b; $c)
+C_REAL:C285($a; $b; $c)
+C_TEXT:C284($a; $b; $c)
+C_TIME:C306($a; $b; $c)
+C_VARIANT:C1683($a; $b; $c)
+
+---
+
+(source_file
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (identifier)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable)))
+  (expression_statement
+    (postfix_expression
+      (command)
+      (local_variable)
+      (local_variable)
+      (local_variable))))

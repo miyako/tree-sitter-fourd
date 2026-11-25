@@ -1,0 +1,100 @@
+==================
+1. function_block
+==================
+
+function afunction($param1:Text)->$returnValue:Integer
+exposed function afunction($param1:Text)->$returnValue:Integer
+local function afunction($param1:Text)->$returnValue:Integer
+local exposed function afunction($param1:Text)->$returnValue:Integer
+local exposed function get aproperty($param1:Text)->$returnValue:Integer
+local exposed function set aproperty($param1:Text)->$returnValue:Integer
+local exposed function query aproperty($param1:Text)->$returnValue:Integer
+local exposed function orderBy aproperty($param1:Text)->$returnValue:Integer
+
+---
+
+(source_file
+  (function_declaration
+    (identifier)
+    (parameter_list
+      (parameter
+        (local_variable)
+        (identifier)))
+    (parameter
+      (local_variable)
+      (identifier)))
+  (function_declaration
+    (modifier)
+    (identifier)
+    (parameter_list
+      (parameter
+        (local_variable)
+        (identifier)))
+    (parameter
+      (local_variable)
+      (identifier)))
+  (function_declaration
+    (modifier)
+    (identifier)
+    (parameter_list
+      (parameter
+        (local_variable)
+        (identifier)))
+    (parameter
+      (local_variable)
+      (identifier)))
+  (function_declaration
+    (modifier)
+    (modifier)
+    (identifier)
+    (parameter_list
+      (parameter
+        (local_variable)
+        (identifier)))
+    (parameter
+      (local_variable)
+      (identifier)))
+  (function_declaration
+    (modifier)
+    (modifier)
+    (identifier)
+    (parameter_list
+      (parameter
+        (local_variable)
+        (identifier)))
+    (parameter
+      (local_variable)
+      (identifier)))
+  (function_declaration
+    (modifier)
+    (modifier)
+    (identifier)
+    (parameter_list
+      (parameter
+        (local_variable)
+        (identifier)))
+    (parameter
+      (local_variable)
+      (identifier)))
+  (function_declaration
+    (modifier)
+    (modifier)
+    (identifier)
+    (parameter_list
+      (parameter
+        (local_variable)
+        (identifier)))
+    (parameter
+      (local_variable)
+      (identifier)))
+  (function_declaration
+    (modifier)
+    (modifier)
+    (identifier)
+    (parameter_list
+      (parameter
+        (local_variable)
+        (identifier)))
+    (parameter
+      (local_variable)
+      (identifier))))

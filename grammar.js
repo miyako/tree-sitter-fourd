@@ -87,7 +87,15 @@ module.exports = grammar({
 
     // ---------------------------------------------------------------- classes
 
-    extends_clause: $ => seq(kw('Class', 'extends'), field('super', $.identifier), $._terminator),
+    // A class reference in `class extends …`: `aClass`, `cs.aClass`,
+    // `4D.Entity`. Deliberately not `$._type` — the `super` field has to land
+    // on a visible node, because languages/*/symbols.scm reads it.
+    class_name: $ => prec.right(seq(
+      choice($.identifier, '4D'),
+      repeat(seq('.', $.identifier)),
+    )),
+
+    extends_clause: $ => seq(alias(kw('Class', 'extends'), $.keyword), field('super', $.class_name), $._terminator),
 
     // Mirrors var_declaration: `property a; b : Text` declares several names
     // sharing one type, and `: Type := default` / bare `:= default` are the
@@ -110,7 +118,7 @@ module.exports = grammar({
       $._function_start,
       repeat(field('modifier', $.modifier)),
       choice(
-        kw('Class', 'constructor'),
+        alias(kw('Class', 'constructor'), $.keyword),
         seq(choice('Function', 'function'),   // keyword case is not enforced in the wild
             // get/set computed-attribute accessors, plus the ORDA markers:
             // `Function event restrict`, `Function query attr`, `Function orderBy attr`
@@ -167,6 +175,7 @@ module.exports = grammar({
       $.for_statement,
       $.for_each_statement,
       $.try_statement,
+      $.use_statement,
       $.sql_block,
       $.declare_statement,
       $.jump_statement,
@@ -239,17 +248,17 @@ module.exports = grammar({
       'If', field('condition', $._expression), $._terminator,
       field('consequence', repeat($._statement)),
       optional(seq('Else', $._terminator, field('alternative', repeat($._statement)))),
-      kw('End', 'if'), $._terminator,
+      alias(kw('End', 'if'), $.keyword), $._terminator,
     ),
 
     // Branches are implicitly terminated, same shape as function bodies: the
     // next ':' / 'Else' / 'End case' closes the previous one. No scanner help
     // needed — no statement can begin with ':', and ':=' out-lexes it.
     case_statement: $ => seq(
-      kw('Case', 'of'), $._terminator,
+      alias(kw('Case', 'of'), $.keyword), $._terminator,
       repeat($.case_branch),
       optional(seq('Else', $._terminator, field('alternative', repeat($._statement)))),
-      kw('End', 'case'), $._terminator,
+      alias(kw('End', 'case'), $.keyword), $._terminator,
     ),
 
     case_branch: $ => seq(
@@ -260,7 +269,7 @@ module.exports = grammar({
     while_statement: $ => seq(
       'While', field('condition', $._expression), $._terminator,
       repeat($._statement),
-      kw('End', 'while'), $._terminator,
+      alias(kw('End', 'while'), $.keyword), $._terminator,
     ),
 
     repeat_statement: $ => seq(
@@ -277,11 +286,11 @@ module.exports = grammar({
         optional(seq(';', field('step', $._expression))),
       ')', $._terminator,
       repeat($._statement),
-      kw('End', 'for'), $._terminator,
+      alias(kw('End', 'for'), $.keyword), $._terminator,
     ),
 
     for_each_statement: $ => seq(
-      kw('For', 'each'), '(',
+      alias(kw('For', 'each'), $.keyword), '(',
         field('item', $._expression), ';',
         field('collection', $._expression),
         repeat(seq(';', $._expression)),
@@ -289,20 +298,28 @@ module.exports = grammar({
       optional(seq(choice('Until', 'While'), field('guard', $._expression))),
       $._terminator,
       repeat($._statement),
-      kw('End', 'for', 'each'), $._terminator,
+      alias(kw('End', 'for', 'each'), $.keyword), $._terminator,
+    ),
+
+    // `Use (sharedObj)` ... `End use` — shared-object/collection access
+    // blocks. The parens are part of the expression, like If conditions.
+    use_statement: $ => seq(
+      'Use', field('object', $._expression), $._terminator,
+      repeat($._statement),
+      alias(kw('End', 'use'), $.keyword), $._terminator,
     ),
 
     try_statement: $ => seq(
       'Try', $._terminator,
       field('body', repeat($._statement)),
       optional(seq('Catch', $._terminator, field('handler', repeat($._statement)))),
-      kw('End', 'try'), $._terminator,
+      alias(kw('End', 'try'), $.keyword), $._terminator,
     ),
 
     sql_block: $ => seq(
-      kw('Begin', 'SQL'), $._terminator,
+      alias(kw('Begin', 'SQL'), $.keyword), $._terminator,
       field('body', optional($.sql_content)),
-      kw('End', 'SQL'), $._terminator,
+      alias(kw('End', 'SQL'), $.keyword), $._terminator,
     ),
 
     // Real code carries JS-habit trailing semicolons (`$b.analyse();`);
