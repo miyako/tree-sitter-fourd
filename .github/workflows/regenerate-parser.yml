@@ -1,0 +1,258 @@
+name: Regenerate parser
+
+# Rebuilds the committed tree-sitter artefacts -- src/parser.c, src/grammar.json
+# and src/node-types.json -- from grammar.js, and opens a pull request when the
+# result differs from what is committed.
+#
+# Why this exists: those three files are generated, ~4 MB of C, and nothing
+# stops grammar.js from being edited without them being regenerated. When that
+# happens the parser every editor actually compiles is the *old* grammar, while
+# the queries and the grammar.js a reader opens are the new one. Right now the
+# two are genuinely out of sync -- the committed grammar.json holds 181 rules,
+# grammar.js defines 51 -- so the first run of this workflow is expected to open
+# a large PR. Reviewing that diff is the point; the workflow does not decide
+# which side is right.
+#
+# It is deliberately not a check that blocks pull requests. A stale tree is a
+# fact to surface with a diff, not a red X on unrelated work.
+#
+# The CLI version is pinned. Generation is deterministic for a given version,
+# so "no change" is a meaningful result; letting the CLI float would turn every
+# dependency bump into a whole-file rewrite that hides real grammar changes.
+# 0.22.4 emits LANGUAGE_VERSION 14, which is what is committed today; a version
+# bump is a decision that shows up in the diff as an ABI change, and the PR body
+# says so explicitly.
+#
+# What is verified before a PR is opened:
+#   * src/parser.c and src/scanner.c compile (cc -fsyntax-only);
+#   * the new parser parses test/smoke.4dm with no ERROR or MISSING node.
+# A generation that fails either gate is a bug, not a change to review, so the
+# job fails and no PR is opened.
+
+on:
+  workflow_dispatch:
+    inputs:
+      cli_version:
+        description: 'tree-sitter CLI version to generate with'
+        required: false
+        default: '0.22.4'
+  push:
+    branches:
+      - main
+    paths:
+      - grammar.js
+      - test/smoke.4dm
+      - .github/workflows/regenerate-parser.yml
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: regenerate-parser
+  cancel-in-progress: false
+
+env:
+  GH_TOKEN: ${{ github.token }}
+  BRANCH: ci/regenerate-parser
+  CLI_VERSION: ${{ inputs.cli_version || '0.22.4' }}
+
+jobs:
+  regenerate:
+    name: Regenerate tree-sitter artefacts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install the pinned tree-sitter CLI
+        run: |
+          set -euo pipefail
+          # Into $RUNNER_TEMP, not the repository: `npm install` in the grammar
+          # directory also rewrites package.json, which would be committed by
+          # accident.
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/cli" "tree-sitter-cli@${CLI_VERSION}"
+          echo "$RUNNER_TEMP/cli/node_modules/.bin" >> "$GITHUB_PATH"
+          # $GITHUB_PATH only applies to later steps, so prove the install here.
+          PATH="$RUNNER_TEMP/cli/node_modules/.bin:$PATH" tree-sitter --version
+
+      - name: Generate
+        run: |
+          set -euo pipefail
+
+          # Kept for the PR body: the ABI is the contract between this parser and
+          # the runtime an editor links it into.
+          before_abi=$(sed -n 's/^#define LANGUAGE_VERSION //p' src/parser.c | head -1)
+          echo "before_abi=$before_abi" >> "$GITHUB_ENV"
+
+          keep="$RUNNER_TEMP/generated"
+          mkdir -p "$keep"
+
+          tree-sitter generate
+
+          # `generate` does more than regenerate: it also migrates the grammar to
+          # the CLI's own template, rewriting package.json, the node/Rust bindings
+          # and src/tree_sitter/*.h, and dropping new files (Makefile,
+          # Package.swift, pyproject.toml, bindings/go, ...). Only the three
+          # artefacts below are this workflow's business, so keep those and put
+          # the rest of the checkout back exactly as it was. The clean is safe
+          # here because the job starts from a fresh checkout.
+          cp src/parser.c src/grammar.json src/node-types.json "$keep/"
+          git checkout -- .
+          git clean -fdq
+          cp "$keep/parser.c" "$keep/grammar.json" "$keep/node-types.json" src/
+
+          after_abi=$(sed -n 's/^#define LANGUAGE_VERSION //p' src/parser.c | head -1)
+          echo "after_abi=$after_abi" >> "$GITHUB_ENV"
+          if [ "$before_abi" != "$after_abi" ]; then
+            echo "::warning::LANGUAGE_VERSION moved from $before_abi to $after_abi: this parser now needs a newer runtime"
+          fi
+          echo "src/ regenerated; the diff is $(git status --porcelain -- src | wc -l) file(s)"
+
+      - name: Verify the generated parser compiles
+        run: |
+          set -euo pipefail
+          # -Isrc resolves the generated tree_sitter/parser.h that ships here.
+          cc -std=c11 -fsyntax-only -Isrc src/parser.c
+          cc -std=c11 -fsyntax-only -Isrc src/scanner.c
+          echo "parser.c and scanner.c compile"
+
+      - name: Verify the generated parser parses
+        run: |
+          set -euo pipefail
+
+          # `tree-sitter parse` needs a parser directory named tree-sitter-<lang>
+          # that contains this checkout; the job runs in a directory named after
+          # the repository, which is not necessarily that.
+          mkdir -p "$RUNNER_TEMP/grammars"
+          ln -sfn "$GITHUB_WORKSPACE" "$RUNNER_TEMP/grammars/tree-sitter-fourd"
+
+          tree-sitter init-config
+          config=$(find "$HOME" -name config.json -path '*tree-sitter*' -print -quit)
+          test -n "$config" || {
+            echo "::error::tree-sitter init-config did not write a config"
+            exit 1
+          }
+          python3 - "$config" "$RUNNER_TEMP/grammars" <<'PY'
+          import json, sys
+          path, parsers = sys.argv[1], sys.argv[2]
+          with open(path, encoding="utf-8") as handle:
+              data = json.load(handle)
+          data["parser-directories"] = [parsers]
+          with open(path, "w", encoding="utf-8") as handle:
+              json.dump(data, handle, indent=2)
+          PY
+
+          output=$(tree-sitter parse test/smoke.4dm)
+          echo "$output" | tail -20
+          if echo "$output" | grep -qE 'ERROR|MISSING'; then
+            echo "::error::the regenerated parser cannot parse test/smoke.4dm without errors"
+            exit 1
+          fi
+
+      - name: Record the shape of the change
+        id: shape
+        run: |
+          set -euo pipefail
+
+          # Written to files rather than piped: `git show | grep -m1` under
+          # `set -o pipefail` can exit 141 when grep stops reading early.
+          committed="$RUNNER_TEMP/committed-parser.c"
+          git show HEAD:src/parser.c > "$committed"
+
+          for name in STATE_COUNT SYMBOL_COUNT TOKEN_COUNT; do
+            before=$(sed -n "s/^#define $name //p" "$committed" | head -1)
+            after=$(sed -n "s/^#define $name //p" src/parser.c | head -1)
+            echo "$name: $before -> $after"
+            echo "$name=${before} -> ${after}" >> "$GITHUB_OUTPUT"
+          done
+
+          # Committed from HEAD, regenerated from the working tree: the pair is
+          # the drift signal. A grammar.json whose rule count disagrees with
+          # grammar.js was generated from a grammar.js that no longer exists here.
+          git show HEAD:src/grammar.json > "$RUNNER_TEMP/committed-grammar.json"
+          echo "committed_rules=$(python3 -c 'import json,sys;print(len(json.load(open(sys.argv[1]))["rules"]))' "$RUNNER_TEMP/committed-grammar.json")" >> "$GITHUB_OUTPUT"
+          echo "rules=$(python3 -c 'import json;print(len(json.load(open("src/grammar.json"))["rules"]))')" >> "$GITHUB_OUTPUT"
+          echo "js_rules=$(grep -cE '^    [a-z_]+: ' grammar.js || true)" >> "$GITHUB_OUTPUT"
+
+      - name: Detect changes
+        id: changes
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- src/parser.c src/grammar.json src/node-types.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "src/ already matches grammar.js under tree-sitter ${CLI_VERSION}"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff --stat -- src/parser.c src/grammar.json src/node-types.json
+          fi
+
+      - name: Open pull request
+        if: steps.changes.outputs.changed == 'true'
+        # Step outputs reach the script through the environment, never spliced
+        # into it: GitHub expands ${{ }} into the script text, so a backtick in
+        # a value would be run by bash rather than printed.
+        env:
+          STATE_CHANGE: ${{ steps.shape.outputs.STATE_COUNT }}
+          SYMBOL_CHANGE: ${{ steps.shape.outputs.SYMBOL_COUNT }}
+          TOKEN_CHANGE: ${{ steps.shape.outputs.TOKEN_COUNT }}
+          COMMITTED_RULES: ${{ steps.shape.outputs.committed_rules }}
+          REGENERATED_RULES: ${{ steps.shape.outputs.rules }}
+          JS_RULES: ${{ steps.shape.outputs.js_rules }}
+          BASE_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add src/parser.c src/grammar.json src/node-types.json
+          git commit -m "Regenerate parser from grammar.js"
+          git fetch --quiet origin "$BRANCH" || true
+          git push --force-with-lease origin "$BRANCH"
+
+          body=$(mktemp)
+          {
+            echo 'Rebuilt `src/parser.c`, `src/grammar.json` and `src/node-types.json` from `grammar.js` with tree-sitter CLI'
+            echo "**${CLI_VERSION}**, then verified that both C files compile and that the result parses"
+            echo '`test/smoke.4dm` without errors.'
+            echo
+            echo '| | |'
+            echo '|---|---|'
+            echo "| LANGUAGE_VERSION | \`${before_abi}\` -> \`${after_abi}\` |"
+            echo "| STATE_COUNT | $STATE_CHANGE |"
+            echo "| SYMBOL_COUNT | $SYMBOL_CHANGE |"
+            echo "| TOKEN_COUNT | $TOKEN_CHANGE |"
+            echo "| rules in src/grammar.json (committed) | $COMMITTED_RULES |"
+            echo "| rules in src/grammar.json (regenerated) | $REGENERATED_RULES |"
+            echo "| rules in grammar.js | $JS_RULES |"
+            echo
+            echo 'A committed count that disagrees with `grammar.js` means the artefacts in the tree'
+            echo 'were generated from a grammar.js that is no longer there -- the drift this workflow'
+            echo 'exists to catch.'
+            echo
+            echo 'Before merging, check the node names the highlighting queries in `language-4dm-zed`'
+            echo 'reference -- `languages/4d/*.scm` -- against the new `src/node-types.json`.'
+            echo 'A rename shows up there and nowhere else.'
+            echo
+            if [ "$before_abi" != "$after_abi" ]; then
+              echo '> **ABI change.** `LANGUAGE_VERSION` moved. Editors embed a parser and link it'
+              echo '> against their own tree-sitter runtime; confirm the target runtime supports the'
+              echo '> new ABI before merging.'
+            fi
+          } > "$body"
+
+          # Captured rather than piped into `grep -q`, which can close the pipe
+          # under `set -o pipefail` and fail the step on a successful lookup.
+          existing=$(gh pr list --head "$BRANCH" --state open --json number --jq 'length')
+          if [ "$existing" != "0" ]; then
+            gh pr edit "$BRANCH" --title "Regenerate parser from grammar.js" --body-file "$body"
+          else
+            gh pr create \
+              --head "$BRANCH" \
+              --base "$BASE_BRANCH" \
+              --title "Regenerate parser from grammar.js" \
+              --body-file "$body"
+          fi
