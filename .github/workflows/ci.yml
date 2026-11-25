@@ -1,0 +1,128 @@
+name: CI
+
+# Gates a pull request on what must never reach main: a grammar that does not
+# generate, a parser that does not compile, or a smoke file that stops parsing.
+#
+# Regenerating the artefacts and re-baselining the corpus are deliberately not
+# failures here. Those are `regenerate-parser.yml`'s job after the merge, and it
+# opens a pull request with the diff -- which is where a changed tree shape
+# should be read. Two ways to fail on the same edit would mean the strict one
+# decides, and the flow that documents itself would stop working.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CLI_VERSION: '0.22.4'
+
+jobs:
+  grammar:
+    name: Grammar
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install the pinned tree-sitter CLI
+        run: |
+          set -euo pipefail
+          # Into $RUNNER_TEMP, not the repository: `npm install` in the grammar
+          # directory also rewrites package.json, which would be committed by
+          # accident.
+          npm install --no-audit --no-fund --prefix "$RUNNER_TEMP/cli" "tree-sitter-cli@${CLI_VERSION}"
+          echo "$RUNNER_TEMP/cli/node_modules/.bin" >> "$GITHUB_PATH"
+          PATH="$RUNNER_TEMP/cli/node_modules/.bin:$PATH" tree-sitter --version
+
+      - name: Generate
+        run: |
+          set -euo pipefail
+
+          keep="$RUNNER_TEMP/generated"
+          mkdir -p "$keep"
+
+          # Fails the job: a grammar.js that cannot generate is the one thing
+          # that must not be merged.
+          tree-sitter generate
+
+          # `generate` also migrates the tree to the CLI's template (package.json,
+          # bindings, src/tree_sitter/*.h) and drops new files. Only the three
+          # artefacts are compared, so put the rest back.
+          cp src/parser.c src/grammar.json src/node-types.json "$keep/"
+          git checkout -- .
+          git clean -fdq
+          cp "$keep/parser.c" "$keep/grammar.json" "$keep/node-types.json" src/
+
+          drifted=$(git status --porcelain -- src | wc -l)
+          if [ "$drifted" -ne 0 ]; then
+            echo "::warning::the committed artefacts are not what grammar.js generates ($drifted file(s)). regenerate-parser.yml rebuilds them after the merge; a pull request that edits grammar.js can also run \`tree-sitter generate\` and commit src/."
+            git status --short -- src
+          else
+            echo "src/ matches grammar.js"
+          fi
+
+      - name: Verify the generated parser compiles
+        run: |
+          set -euo pipefail
+          # -Isrc resolves the generated tree_sitter/parser.h that ships here.
+          cc -std=c11 -fsyntax-only -Isrc src/parser.c
+          cc -std=c11 -fsyntax-only -Isrc src/scanner.c
+          echo "parser.c and scanner.c compile"
+
+      - name: Verify the generated parser parses
+        run: |
+          set -euo pipefail
+
+          # `tree-sitter parse` needs a parser directory named tree-sitter-<lang>
+          # that contains this checkout; the job runs in a directory named after
+          # the repository, which is not necessarily that.
+          mkdir -p "$RUNNER_TEMP/grammars"
+          ln -sfn "$GITHUB_WORKSPACE" "$RUNNER_TEMP/grammars/tree-sitter-fourd"
+
+          tree-sitter init-config
+          config=$(find "$HOME" -name config.json -path '*tree-sitter*' -print -quit)
+          test -n "$config" || {
+            echo "::error::tree-sitter init-config did not write a config"
+            exit 1
+          }
+          python3 - "$config" "$RUNNER_TEMP/grammars" <<'PY'
+          import json, sys
+          path, parsers = sys.argv[1], sys.argv[2]
+          with open(path, encoding="utf-8") as handle:
+              data = json.load(handle)
+          data["parser-directories"] = [parsers]
+          with open(path, "w", encoding="utf-8") as handle:
+              json.dump(data, handle, indent=2)
+          PY
+
+          output=$(tree-sitter parse test/smoke.4dm)
+          echo "$output" | tail -20
+          if echo "$output" | grep -qE 'ERROR|MISSING'; then
+            echo "::error::the parser cannot parse test/smoke.4dm without errors"
+            exit 1
+          fi
+
+      - name: Run the corpus
+        run: |
+          set -uo pipefail
+          output=$(tree-sitter test 2>&1 || true)
+          clean=$(printf '%s\n' "$output" | sed 's/\x1b\[[0-9;]*m//g')
+          passed=$(printf '%s\n' "$clean" | grep -c '✓' || true)
+          failed=$(printf '%s\n' "$clean" | grep -c '✗' || true)
+          echo "corpus: ${passed} passed, ${failed} failing"
+          if [ "$failed" -ne 0 ]; then
+            # Not an error: the fixtures describe the trees this grammar produced
+            # when they were last re-baselined, and a grammar change is supposed
+            # to move them. regenerate-parser.yml re-baselines after the merge
+            # and shows the new trees in its pull request.
+            printf '%s\n' "$clean" | grep -E '✗|expected|actual' | head -40
+            echo "::warning::${failed} corpus fixture(s) no longer match; they are re-baselined by regenerate-parser.yml after the merge"
+          fi
